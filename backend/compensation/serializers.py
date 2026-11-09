@@ -11,10 +11,12 @@ from .services import CurrencyService
 class UserDetailSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     department = serializers.SerializerMethodField()
+    is_hr = serializers.SerializerMethodField()
+    employee_record = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'department']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'department', 'is_hr', 'employee_record']
 
     def get_role(self, obj):
         profile = getattr(obj, 'profile', None)
@@ -23,6 +25,32 @@ class UserDetailSerializer(serializers.ModelSerializer):
     def get_department(self, obj):
         profile = getattr(obj, 'profile', None)
         return profile.department if profile else 'People Operations'
+
+    def get_is_hr(self, obj):
+        profile = getattr(obj, 'profile', None)
+        if not profile:
+            return True
+        r = (profile.role or '').lower()
+        if 'employee' in r or 'staff' in r:
+            return False
+        return True
+
+    def get_employee_record(self, obj):
+        emp = Employee.objects.filter(email=obj.email).select_related('salary_structure').first()
+        if emp:
+            struct = getattr(emp, 'salary_structure', None)
+            return {
+                'employee_id': emp.employee_id,
+                'job_title': emp.job_title,
+                'department': emp.department,
+                'country': emp.country,
+                'city': emp.city,
+                'currency': emp.currency,
+                'base_salary': float(struct.base_salary) if struct else 0,
+                'bonus_percentage': float(struct.bonus_percentage) if struct else 0,
+                'net_annual_salary': float(struct.net_annual_salary) if struct else 0,
+            }
+        return None
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):

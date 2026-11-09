@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, UserPlus, RotateCcw } from 'lucide-react';
+import { Search, Download, UserPlus, RotateCcw, Lock } from 'lucide-react';
 import { FilterParams } from '../types';
 
 interface FilterToolbarProps {
@@ -9,6 +9,7 @@ interface FilterToolbarProps {
   onOpenAddModal: () => void;
   onExportCsv: () => void;
   exporting?: boolean;
+  isHR?: boolean;
 }
 
 const DEPARTMENTS = [
@@ -30,6 +31,7 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
   onOpenAddModal,
   onExportCsv,
   exporting,
+  isHR = true,
 }) => {
   const [searchTerm, setSearchTerm] = useState(filters.search || '');
 
@@ -84,7 +86,7 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
           {hasActiveFilters && (
             <button
               onClick={onReset}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Reset Filters
@@ -94,19 +96,30 @@ export const FilterToolbar: React.FC<FilterToolbarProps> = ({
           <button
             onClick={onExportCsv}
             disabled={exporting}
-            className="flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition shadow-xs disabled:opacity-50"
+            className="flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition shadow-xs disabled:opacity-50 cursor-pointer"
           >
             <Download className="w-4 h-4 text-slate-500" />
             <span>{exporting ? 'Exporting...' : 'Export CSV'}</span>
           </button>
 
-          <button
-            onClick={onOpenAddModal}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-sm shadow-indigo-200"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>Add Employee</span>
-          </button>
+          {isHR ? (
+            <button
+              onClick={onOpenAddModal}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-sm shadow-indigo-200 cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Add Employee</span>
+            </button>
+          ) : (
+            <button
+              disabled
+              title="HR Manager permission required to onboard new employees"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-400 bg-slate-100 rounded-xl border border-slate-200 cursor-not-allowed"
+            >
+              <Lock className="w-3.5 h-3.5 text-slate-400" />
+              <span>Add Employee (HR Only)</span>
+            </button>
+          )}
         </div>
       </div>
 

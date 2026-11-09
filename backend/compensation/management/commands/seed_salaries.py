@@ -162,7 +162,9 @@ class Command(BaseCommand):
         CurrencyService.initialize_default_rates()
         default_users = [
             {'u': 'alex.hr', 'e': 'alex.hr@acme.org', 'p': 'Password123!', 'f': 'Alex', 'l': 'Rivera', 'r': 'Head of HR & Total Rewards', 'd': 'People Operations'},
-            {'u': 'pchaduvala', 'e': 'pchaduvala@gmail.com', 'p': 'Password123!', 'f': 'Praveen', 'l': 'Chaduvala', 'r': 'HR Operations Lead', 'd': 'Global People & Compensation'}
+            {'u': 'pchaduvala', 'e': 'pchaduvala@gmail.com', 'p': 'Password123!', 'f': 'Praveen', 'l': 'Chaduvala', 'r': 'HR Operations Lead', 'd': 'Global People & Compensation'},
+            {'u': 'jessica.emp', 'e': 'jessica.lewis.4313@acme.org', 'p': 'Password123!', 'f': 'Jessica', 'l': 'Lewis', 'r': 'Senior Software Engineer (Employee)', 'd': 'Engineering'},
+            {'u': 'sarah.emp', 'e': 'sarah.jenkins@acme.org', 'p': 'Password123!', 'f': 'Sarah', 'l': 'Jenkins', 'r': 'Employee (Read-Only)', 'd': 'Engineering'}
         ]
         for du in default_users:
             usr, created = User.objects.get_or_create(

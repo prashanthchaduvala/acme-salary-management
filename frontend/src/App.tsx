@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Users } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { KPIHeader } from './components/KPIHeader';
 import { AnalyticsCharts } from './components/AnalyticsCharts';
@@ -244,6 +245,12 @@ export const App: React.FC = () => {
 
   const totalPages = Math.ceil(totalCount / (filters.page_size || 25));
 
+  const isHR = user
+    ? user.is_hr !== false &&
+      !user.role?.toLowerCase().includes('employee') &&
+      !user.role?.toLowerCase().includes('staff')
+    : true;
+
   const isFiltered = Boolean(
     (filters.department && filters.department !== 'All') ||
     (filters.country && filters.country !== 'All') ||
@@ -279,6 +286,44 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Employee Read-Only Notification Banner */}
+        {!isHR && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 border border-emerald-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-slate-900">Standard Employee Access Mode (Read-Only)</h4>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    Self-Service Active
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  You are authenticated as <strong>{user?.first_name} {user?.last_name}</strong> ({user?.role}). You have read-only access to browse the staff directory. Modifying employee compensation and onboarding new hires are strictly reserved for HR Administrators.
+                </p>
+              </div>
+            </div>
+            {user?.employee_record && (
+              <div className="flex items-center gap-3 bg-white px-3.5 py-2 rounded-xl border border-emerald-200 shrink-0">
+                <div className="text-left text-xs">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">My Base Salary</span>
+                  <span className="font-extrabold text-slate-900">
+                    {user.employee_record.base_salary.toLocaleString()} {user.employee_record.currency}
+                  </span>
+                </div>
+                <div className="h-6 w-px bg-slate-200" />
+                <div className="text-left text-xs">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Target Bonus</span>
+                  <span className="font-extrabold text-indigo-600">
+                    {user.employee_record.bonus_percentage}%
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {/* KPI Strip */}
         <KPIHeader
           summary={summary}
@@ -351,10 +396,15 @@ export const App: React.FC = () => {
               onFilterChange={handleFilterChange}
               onReset={handleResetFilters}
               onOpenAddModal={() => {
-                setIsAddModalOpen(true);
+                if (isHR) {
+                  setIsAddModalOpen(true);
+                } else {
+                  setToast({ type: 'info', message: 'Onboarding new hires is restricted to HR Managers.' });
+                }
               }}
               onExportCsv={handleExportCsv}
               exporting={exporting}
+              isHR={isHR}
             />
 
             <EmployeeTable
@@ -398,6 +448,7 @@ export const App: React.FC = () => {
         isOpen={Boolean(selectedEmployee)}
         onClose={() => setSelectedEmployee(null)}
         onSuccess={handleSalaryRevisionSuccess}
+        isHR={isHR}
       />
 
       {/* Add Employee Modal */}

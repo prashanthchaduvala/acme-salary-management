@@ -6,6 +6,18 @@ export interface User {
   last_name: string;
   role: string;
   department: string;
+  is_hr?: boolean;
+  employee_record?: {
+    employee_id: string;
+    job_title: string;
+    department: string;
+    country: string;
+    city: string;
+    currency: string;
+    base_salary: number;
+    bonus_percentage: number;
+    net_annual_salary: number;
+  } | null;
 }
 
 export interface AuthResponse {

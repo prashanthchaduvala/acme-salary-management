@@ -117,17 +117,43 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Auth Section */}
             {user ? (
               <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-indigo-500/20">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`w-9 h-9 rounded-full text-white flex items-center justify-center font-bold text-xs shadow-xs ring-2 ${
+                      user.is_hr !== false && !user.role?.toLowerCase().includes('employee')
+                        ? 'bg-gradient-to-tr from-indigo-600 to-indigo-500 ring-indigo-500/20'
+                        : 'bg-gradient-to-tr from-teal-600 to-emerald-500 ring-emerald-500/20'
+                    }`}
+                  >
                     {getInitials(user)}
                   </div>
                   <div className="hidden lg:block text-left">
-                    <p className="text-xs font-bold text-slate-900 leading-none">
-                      {user.first_name ? `${user.first_name} ${user.last_name}` : user.username}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-slate-900 leading-none">
+                        {user.first_name ? `${user.first_name} ${user.last_name}` : user.username}
+                      </p>
+                      {user.is_hr !== false && !user.role?.toLowerCase().includes('employee') ? (
+                        <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          HR Admin
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          Staff (Read-Only)
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <ShieldCheck className="w-3 h-3 text-indigo-600" />
-                      <span className="text-[10px] text-slate-500 font-medium">{user.role || 'HR Lead'}</span>
+                      {user.is_hr !== false && !user.role?.toLowerCase().includes('employee') ? (
+                        <>
+                          <ShieldCheck className="w-3 h-3 text-indigo-600" />
+                          <span className="text-[10px] text-slate-500 font-medium">{user.role || 'HR Lead'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Users className="w-3 h-3 text-emerald-600" />
+                          <span className="text-[10px] text-slate-500 font-medium">{user.role || 'Staff Member'}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

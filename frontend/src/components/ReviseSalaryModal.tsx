@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, History, ShieldCheck, Check, DollarSign } from 'lucide-react';
+import { X, History, ShieldCheck, Check, DollarSign, Lock } from 'lucide-react';
 import { Employee, EmployeeDetail } from '../types';
 import { api } from '../services/api';
 import { formatCurrency, formatDate } from '../utils/formatters';
@@ -9,6 +9,7 @@ interface ReviseSalaryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (updatedEmployee: EmployeeDetail) => void;
+  isHR?: boolean;
 }
 
 const REASONS = [
@@ -25,6 +26,7 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  isHR = true,
 }) => {
   const [detail, setDetail] = useState<EmployeeDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -65,6 +67,10 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isHR) {
+      setError('Permission denied: Only authorized HR Managers can apply revisions.');
+      return;
+    }
     if (!proposedBase || proposedBase <= 0) {
       setError('Please provide a valid salary amount.');
       return;
@@ -101,8 +107,13 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
                 {employee.employee_id}
               </span>
               <h2 className="text-base font-bold text-slate-900">
-                Salary Adjustment & Compensation Audit
+                {isHR ? 'Salary Adjustment & Compensation Audit' : 'Compensation Audit & Breakdown'}
               </h2>
+              {!isHR && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  Read-Only View
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
               {employee.full_name} • {employee.job_title} ({employee.department}) • {employee.country}
@@ -110,7 +121,7 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -118,6 +129,16 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+          {/* RBAC Notice for standard employees */}
+          {!isHR && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex items-center gap-2">
+              <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                <strong>Read-Only Access:</strong> You are viewing this record as a standard staff member. Reviewing historical adjustments and allowances is allowed, but modifying compensation is restricted to HR Managers.
+              </span>
+            </div>
+          )}
+
           {error && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium">
               {error}
@@ -137,12 +158,14 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
             </div>
 
             <div className="border-l border-slate-200 pl-4">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Proposed Base Salary</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                {isHR ? 'Proposed Base Salary' : 'Normalized Value'}
+              </span>
               <div className="flex items-baseline gap-2 mt-1">
                 <span className="text-xl font-mono font-extrabold text-indigo-700">
                   {formatCurrency(proposedBase || 0, employee.currency)}
                 </span>
-                {deltaPct !== '0.0' && (
+                {isHR && deltaPct !== '0.0' && (
                   <span
                     className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                       isIncrement
@@ -156,7 +179,9 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
                   </span>
                 )}
               </div>
-              <span className="text-[11px] text-slate-500">Effective immediately upon submission</span>
+              <span className="text-[11px] text-slate-500">
+                {isHR ? 'Effective immediately upon submission' : 'Current compensation baseline'}
+              </span>
             </div>
           </div>
 
@@ -173,9 +198,10 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
                     type="number"
                     step="100"
                     required
+                    disabled={!isHR}
                     value={newSalary}
                     onChange={(e) => setNewSalary(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl font-mono text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl font-mono text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -187,9 +213,10 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
                 <input
                   type="number"
                   step="0.5"
+                  disabled={!isHR}
                   value={bonusPct}
                   onChange={(e) => setBonusPct(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-mono text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-mono text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -200,8 +227,9 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
               </label>
               <select
                 value={reason}
+                disabled={!isHR}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
               >
                 {REASONS.map((r) => (
                   <option key={r} value={r}>
@@ -252,7 +280,7 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
         <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>Audit record will be permanently signed and logged</span>
+            <span>Audit record logged to immutable database</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -260,19 +288,30 @@ export const ReviseSalaryModal: React.FC<ReviseSalaryModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200/70 transition"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200/70 transition cursor-pointer"
             >
-              Cancel
+              {isHR ? 'Cancel' : 'Close'}
             </button>
-            <button
-              type="submit"
-              form="salary-revision-form"
-              disabled={submitting}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm disabled:opacity-50"
-            >
-              <Check className="w-3.5 h-3.5" />
-              <span>{submitting ? 'Updating...' : 'Confirm Revision'}</span>
-            </button>
+            {isHR ? (
+              <button
+                type="submit"
+                form="salary-revision-form"
+                disabled={submitting}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>{submitting ? 'Updating...' : 'Confirm Revision'}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 bg-slate-200 cursor-not-allowed"
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+                <span>Revision Restricted (HR Only)</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

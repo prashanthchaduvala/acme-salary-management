@@ -22,11 +22,14 @@ interface AuthPageProps {
 }
 
 const ROLES = [
-  'HR Manager',
-  'Compensation & Total Rewards Specialist',
-  'People Operations Lead',
-  'Senior HR Business Partner',
-  'VP of Global People',
+  'HR Manager (Full Admin)',
+  'Compensation & Total Rewards Specialist (HR Admin)',
+  'People Operations Lead (HR Admin)',
+  'Senior HR Business Partner (HR Admin)',
+  'VP of Global People (HR Admin)',
+  'Senior Software Engineer (Employee - Read Only)',
+  'Product Designer (Employee - Read Only)',
+  'Staff Member (Employee - Read Only)',
 ];
 
 export const AuthPage: React.FC<AuthPageProps> = ({
@@ -281,19 +284,20 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
                   1-Click Instant Evaluation Logins:
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     disabled={loading}
                     onClick={() => handleQuickLogin('pchaduvala', 'Password123!')}
-                    className="text-left p-2.5 rounded-xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-xs transition disabled:opacity-50 group"
+                    className="text-left p-2.5 rounded-xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-xs transition disabled:opacity-50 group cursor-pointer"
                   >
                     <span className="text-xs font-bold text-slate-900 block group-hover:text-indigo-600">
                       Praveen Chaduvala
                     </span>
-                    <span className="text-[10px] text-slate-500 block">pchaduvala@gmail.com</span>
+                    <span className="text-[10px] text-indigo-600 font-semibold block">HR Admin (Write)</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">pchaduvala@gmail.com</span>
                     <span className="text-[10px] font-bold text-indigo-600 mt-1 inline-block">
-                      Click to Enter →
+                      Sign in as HR →
                     </span>
                   </button>
 
@@ -301,14 +305,31 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     type="button"
                     disabled={loading}
                     onClick={() => handleQuickLogin('alex.hr', 'Password123!')}
-                    className="text-left p-2.5 rounded-xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-xs transition disabled:opacity-50 group"
+                    className="text-left p-2.5 rounded-xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-xs transition disabled:opacity-50 group cursor-pointer"
                   >
                     <span className="text-xs font-bold text-slate-900 block group-hover:text-indigo-600">
                       Alex Rivera
                     </span>
-                    <span className="text-[10px] text-slate-500 block">Head of HR & Rewards</span>
+                    <span className="text-[10px] text-indigo-600 font-semibold block">Head of Total Rewards</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">alex.hr (HR Lead)</span>
                     <span className="text-[10px] font-bold text-indigo-600 mt-1 inline-block">
-                      Click to Enter →
+                      Sign in as HR →
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => handleQuickLogin('jessica.emp', 'Password123!')}
+                    className="text-left p-2.5 rounded-xl bg-white border border-emerald-200 hover:border-emerald-500 hover:shadow-xs transition disabled:opacity-50 group cursor-pointer"
+                  >
+                    <span className="text-xs font-bold text-slate-900 block group-hover:text-emerald-600">
+                      Jessica Lewis
+                    </span>
+                    <span className="text-[10px] text-emerald-600 font-semibold block">Staff (Read-Only)</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">jessica.emp (ACM-04313)</span>
+                    <span className="text-[10px] font-bold text-emerald-600 mt-1 inline-block">
+                      Sign in as Staff →
                     </span>
                   </button>
                 </div>

@@ -202,8 +202,25 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             return EmployeeCreateSerializer
         return EmployeeDetailSerializer
 
+    def create(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            profile = getattr(request.user, 'profile', None)
+            if profile and ('employee' in (profile.role or '').lower() or 'staff' in (profile.role or '').lower()):
+                return Response(
+                    {'detail': 'Permission denied. Only authorized HR Managers can onboard new employees.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        return super().create(request, *args, **kwargs)
+
     @action(detail=True, methods=['post'], url_path='revise-salary')
     def revise_salary(self, request, pk=None):
+        if request.user.is_authenticated:
+            profile = getattr(request.user, 'profile', None)
+            if profile and ('employee' in (profile.role or '').lower() or 'staff' in (profile.role or '').lower()):
+                return Response(
+                    {'detail': 'Permission denied. Only authorized HR Managers can adjust compensation and revise salaries.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         employee = self.get_object()
         serializer = SalaryRevisionCreateSerializer(data=request.data)
         if not serializer.is_valid():
