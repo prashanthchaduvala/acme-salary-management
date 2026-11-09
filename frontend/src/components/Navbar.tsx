@@ -134,17 +134,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 <button
                   onClick={onLogout}
-                  title="Sign Out"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                  title="Sign Out of Workspace"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition text-xs font-semibold"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5 text-rose-500" />
+                  <span>Sign Out</span>
                 </button>
               </div>
             ) : (
               <div className="pl-3 border-l border-slate-200">
                 <button
                   onClick={onOpenAuthModal}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs shadow-indigo-200"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   <span>HR Sign In</span>

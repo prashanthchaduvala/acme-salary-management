@@ -44,19 +44,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleQuickLogin = (username: string, pass: string) => {
+  // 1-Click login for assessment reviewers
+  const handleQuickLogin = async (username: string, pass: string) => {
     setLoginIdentifier(username);
     setLoginPassword(pass);
     setError(null);
+    setLoading(true);
+
+    try {
+      const res = await api.login({
+        username,
+        password: pass,
+      });
+      onSuccess(res.user);
+      onClose();
+    } catch (err: any) {
+      setError(err?.message || 'Login failed. Please verify credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!loginIdentifier || !loginPassword) {
+      setError('Please enter both username/email and password.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       const res = await api.login({
-        username: loginIdentifier,
+        username: loginIdentifier.trim(),
         password: loginPassword,
       });
       onSuccess(res.user);
@@ -74,13 +94,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setError(null);
     try {
       const res = await api.register({
-        username: regUsername,
-        email: regEmail,
+        username: regUsername.trim(),
+        email: regEmail.trim(),
         password: regPassword,
-        first_name: regFirstName,
-        last_name: regLastName,
+        first_name: regFirstName.trim(),
+        last_name: regLastName.trim(),
         role: regRole,
-        department: regDepartment,
+        department: regDepartment.trim(),
       });
       onSuccess(res.user);
       onClose();
@@ -182,28 +202,40 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               </div>
 
-              {/* Demo quick fill shortcuts */}
+              {/* 1-Click Assessment Logins */}
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
                 <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-indigo-500" />
-                  Quick Assessment Logins:
+                  1-Click Instant Login (Click to Sign In):
                 </span>
                 <div className="flex flex-col gap-1.5">
                   <button
                     type="button"
+                    disabled={loading}
                     onClick={() => handleQuickLogin('pchaduvala', 'Password123!')}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-indigo-300 text-[11px] font-semibold text-slate-700 hover:text-indigo-600 transition flex items-center justify-between"
+                    className="w-full text-left px-3 py-2 rounded-lg bg-white border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/30 text-[11px] font-semibold text-slate-700 hover:text-indigo-700 transition flex items-center justify-between shadow-xs disabled:opacity-50"
                   >
-                    <span>Praveen Chaduvala (pchaduvala@gmail.com)</span>
-                    <span className="text-[10px] text-slate-400">Password123!</span>
+                    <div>
+                      <span className="font-bold text-slate-900 block">Praveen Chaduvala</span>
+                      <span className="text-[10px] text-slate-500">pchaduvala@gmail.com</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                      Click to Enter →
+                    </span>
                   </button>
                   <button
                     type="button"
+                    disabled={loading}
                     onClick={() => handleQuickLogin('alex.hr', 'Password123!')}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-indigo-300 text-[11px] font-semibold text-slate-700 hover:text-indigo-600 transition flex items-center justify-between"
+                    className="w-full text-left px-3 py-2 rounded-lg bg-white border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/30 text-[11px] font-semibold text-slate-700 hover:text-indigo-700 transition flex items-center justify-between shadow-xs disabled:opacity-50"
                   >
-                    <span>Alex Rivera (Head of HR & Rewards)</span>
-                    <span className="text-[10px] text-slate-400">Password123!</span>
+                    <div>
+                      <span className="font-bold text-slate-900 block">Alex Rivera</span>
+                      <span className="text-[10px] text-slate-500">Head of HR & Total Rewards</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                      Click to Enter →
+                    </span>
                   </button>
                 </div>
               </div>
@@ -213,7 +245,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 disabled={loading}
                 className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
-                <span>{loading ? 'Authenticating...' : 'Sign In to Workspace'}</span>
+                <span>{loading ? 'Signing in...' : 'Sign In to Workspace'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </form>

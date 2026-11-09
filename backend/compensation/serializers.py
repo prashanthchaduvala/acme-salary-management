@@ -9,12 +9,20 @@ from .services import CurrencyService
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(source='profile.role', read_only=True)
-    department = serializers.CharField(source='profile.department', read_only=True)
+    role = serializers.SerializerMethodField()
+    department = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'department']
+
+    def get_role(self, obj):
+        profile = getattr(obj, 'profile', None)
+        return profile.role if profile else 'HR Manager'
+
+    def get_department(self, obj):
+        profile = getattr(obj, 'profile', None)
+        return profile.department if profile else 'People Operations'
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -52,19 +60,20 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        username = data.get('username')
-        password = data.get('password')
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
 
-        # Allow logging in with either username or email
+        # 1. Try username direct auth
         user = authenticate(username=username, password=password)
+
+        # 2. If not found, try finding user by email
         if not user:
-            # Check if username passed was an email
             user_by_email = User.objects.filter(email__iexact=username).first()
             if user_by_email:
                 user = authenticate(username=user_by_email.username, password=password)
 
         if not user:
-            raise serializers.ValidationError("Invalid credentials. Please verify username/email and password.")
+            raise serializers.ValidationError("Invalid credentials. Please verify your username/email and password.")
 
         if not user.is_active:
             raise serializers.ValidationError("This HR account is currently disabled.")

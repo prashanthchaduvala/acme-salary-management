@@ -58,7 +58,10 @@ def login_user(request):
     if serializer.is_valid():
         user = serializer.validated_data['user']
         token, _ = Token.objects.get_or_create(user=user)
-        login(request, user)
+        try:
+            login(request, user)
+        except Exception:
+            pass  # Session login is optional fallback; Token auth is primary
         user_data = UserDetailSerializer(user).data
         return Response({
             'message': 'Login successful.',
@@ -69,21 +72,40 @@ def login_user(request):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def logout_user(request):
-    """Logs out user and invalidates auth token."""
+    """Logs out user and invalidates auth token safely."""
+    auth_header = request.headers.get('Authorization', '')
+    if auth_header.startswith('Token '):
+        token_key = auth_header.split(' ')[1].strip()
+        Token.objects.filter(key=token_key).delete()
+
     if request.user.is_authenticated:
         Token.objects.filter(user=request.user).delete()
         logout(request)
+
     return Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def current_user(request):
-    """Returns currently authenticated user profile."""
-    if not request.user.is_authenticated:
-        return Response({'isAuthenticated': False, 'user': None}, status=status.HTTP_200_OK)
-    user_data = UserDetailSerializer(request.user).data
-    return Response({'isAuthenticated': True, 'user': user_data}, status=status.HTTP_200_OK)
+    """Returns currently authenticated user profile safely."""
+    user = request.user
+    if not user.is_authenticated:
+        # Check Token header manually in case standard middleware didn't authenticate
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Token '):
+            token_key = auth_header.split(' ')[1].strip()
+            token_obj = Token.objects.filter(key=token_key).select_related('user').first()
+            if token_obj and token_obj.user.is_active:
+                user = token_obj.user
+
+    if user and user.is_authenticated:
+        user_data = UserDetailSerializer(user).data
+        return Response({'isAuthenticated': True, 'user': user_data}, status=status.HTTP_200_OK)
+
+    return Response({'isAuthenticated': False, 'user': None}, status=status.HTTP_200_OK)
 
 
 # ==========================================

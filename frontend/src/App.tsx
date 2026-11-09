@@ -27,11 +27,15 @@ export const App: React.FC = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
   const [currencies, setCurrencies] = useState<CurrencyRate[]>([]);
 
-  // Auth State
+  // Auth State — Initialized synchronously from localStorage on page load/refresh
   const [user, setUser] = useState<User | null>(() => {
     try {
       const stored = localStorage.getItem('acme_auth_user');
-      return stored ? JSON.parse(stored) : null;
+      const token = localStorage.getItem('acme_auth_token');
+      if (stored && token) {
+        return JSON.parse(stored);
+      }
+      return null;
     } catch {
       return null;
     }
@@ -69,20 +73,30 @@ export const App: React.FC = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
-  // 1. Load initial static metadata (currencies & sync current user)
+  // 1. Initial Load: Currencies & verify backend session on refresh
   useEffect(() => {
     api.getCurrencies()
       .then((data) => setCurrencies(data))
       .catch((err) => console.error('Failed to load currencies:', err));
 
-    api.getMe()
-      .then((res) => {
-        if (res.isAuthenticated && res.user) {
-          setUser(res.user);
-          localStorage.setItem('acme_auth_user', JSON.stringify(res.user));
-        }
-      })
-      .catch(() => {});
+    const token = localStorage.getItem('acme_auth_token');
+    if (token) {
+      api.getMe()
+        .then((res) => {
+          if (res.isAuthenticated && res.user) {
+            setUser(res.user);
+            localStorage.setItem('acme_auth_user', JSON.stringify(res.user));
+          } else {
+            // Token was purged or invalidated on backend
+            setUser(null);
+            localStorage.removeItem('acme_auth_token');
+            localStorage.removeItem('acme_auth_user');
+          }
+        })
+        .catch(() => {
+          // Keep local session if backend temporarily unreachable
+        });
+    }
   }, []);
 
   // 2. Fetch Employee Table Data
@@ -179,16 +193,24 @@ export const App: React.FC = () => {
 
   const handleAuthSuccess = (authenticatedUser: User) => {
     setUser(authenticatedUser);
+    localStorage.setItem('acme_auth_user', JSON.stringify(authenticatedUser));
     setToast({
       type: 'success',
-      message: `Welcome back, ${authenticatedUser.first_name || authenticatedUser.username}! (${authenticatedUser.role || 'HR Lead'})`,
+      message: `Welcome, ${authenticatedUser.first_name || authenticatedUser.username}! Signed in as ${authenticatedUser.role || 'HR Lead'}.`,
     });
   };
 
   const handleLogout = async () => {
-    await api.logout();
-    setUser(null);
-    setToast({ type: 'info', message: 'You have been signed out safely.' });
+    try {
+      await api.logout();
+    } catch (err) {
+      console.warn('Backend logout call failed, clearing local session anyway:', err);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('acme_auth_token');
+      localStorage.removeItem('acme_auth_user');
+      setToast({ type: 'info', message: 'You have been signed out successfully.' });
+    }
   };
 
   const totalPages = Math.ceil(totalCount / (filters.page_size || 25));
@@ -287,7 +309,7 @@ export const App: React.FC = () => {
                 onSelectEmployee={(emp) => {
                   if (!user) {
                     setIsAuthModalOpen(true);
-                    setToast({ type: 'info', message: 'Please sign in to adjust compensation records.' });
+                    setToast({ type: 'info', message: 'Please sign in to adjust employee compensation.' });
                   } else {
                     setSelectedEmployee(emp);
                   }
@@ -333,7 +355,7 @@ export const App: React.FC = () => {
               onSelectEmployee={(emp) => {
                 if (!user) {
                   setIsAuthModalOpen(true);
-                  setToast({ type: 'info', message: 'Please sign in to adjust compensation records.' });
+                  setToast({ type: 'info', message: 'Please sign in to adjust employee compensation.' });
                 } else {
                   setSelectedEmployee(emp);
                 }

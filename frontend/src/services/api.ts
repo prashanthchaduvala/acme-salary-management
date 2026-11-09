@@ -52,11 +52,16 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
+    // Stale token cleanup
+    if (response.status === 401) {
+      localStorage.removeItem('acme_auth_token');
+      localStorage.removeItem('acme_auth_user');
+    }
+
     let errorDetail = 'API request failed';
     try {
       const errJson = await response.json();
       if (typeof errJson === 'object' && errJson !== null) {
-        // Collect messages
         const msgs = Object.entries(errJson)
           .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(' ') : v}`)
           .join(' | ');
