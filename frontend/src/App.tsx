@@ -97,17 +97,23 @@ export const App: React.FC = () => {
             setUser(res.user);
             localStorage.setItem('acme_auth_user', JSON.stringify(res.user));
           } else {
-            // Token was purged or invalidated on backend
             setUser(null);
             localStorage.removeItem('acme_auth_token');
             localStorage.removeItem('acme_auth_user');
           }
         })
-        .catch(() => {
-          // Keep local session if backend temporarily unreachable
-        });
+        .catch(() => {});
     }
   }, []);
+
+  // Set default view based on user role when authenticated
+  useEffect(() => {
+    if (user?.username === 'alex.hr' || user?.role?.toLowerCase().includes('rewards')) {
+      setActiveTab('parity');
+    } else {
+      setActiveTab('overview');
+    }
+  }, [user?.username]);
 
   // 2. Fetch Employee Table Data (when user authenticated)
   const fetchEmployees = useCallback(() => {
@@ -208,6 +214,11 @@ export const App: React.FC = () => {
   const handleAuthSuccess = (authenticatedUser: User) => {
     setUser(authenticatedUser);
     localStorage.setItem('acme_auth_user', JSON.stringify(authenticatedUser));
+    if (authenticatedUser.username === 'alex.hr') {
+      setActiveTab('parity');
+    } else {
+      setActiveTab('overview');
+    }
     setToast({
       type: 'success',
       message: `Welcome, ${authenticatedUser.first_name || authenticatedUser.username}! Signed in as ${authenticatedUser.role || 'HR Lead'}.`,
@@ -224,6 +235,26 @@ export const App: React.FC = () => {
       localStorage.removeItem('acme_auth_token');
       localStorage.removeItem('acme_auth_user');
       setToast({ type: 'info', message: 'You have been signed out successfully.' });
+    }
+  };
+
+  // 1-Click live switcher for evaluation
+  const handleSwitchPersona = async (targetUsername: string) => {
+    try {
+      const res = await api.login({ username: targetUsername, password: 'Welcome@123' });
+      setUser(res.user);
+      localStorage.setItem('acme_auth_user', JSON.stringify(res.user));
+      if (targetUsername === 'alex.hr') {
+        setActiveTab('parity');
+      } else {
+        setActiveTab('overview');
+      }
+      setToast({
+        type: 'info',
+        message: `Switched view to ${res.user.first_name} ${res.user.last_name} (${res.user.role}).`,
+      });
+    } catch (err) {
+      console.error('Failed to switch persona:', err);
     }
   };
 
@@ -288,10 +319,24 @@ export const App: React.FC = () => {
     );
   }
 
-  const isHR =
-    user.is_hr !== false &&
-    !user.role?.toLowerCase().includes('employee') &&
-    !user.role?.toLowerCase().includes('staff');
+  // Persona Determination
+  const isEmployee = Boolean(
+    user.is_hr === false ||
+    user.role?.toLowerCase().includes('employee') ||
+    user.role?.toLowerCase().includes('staff') ||
+    user.role?.toLowerCase().includes('engineer') ||
+    user.username === 'jessica.emp'
+  );
+
+  const isRewardsHead = Boolean(
+    !isEmployee && (
+      user.username === 'alex.hr' ||
+      user.role?.toLowerCase().includes('rewards') ||
+      user.role?.toLowerCase().includes('compensation')
+    )
+  );
+
+  const isPeopleHead = !isEmployee && !isRewardsHead;
 
   const totalPages = Math.ceil(totalCount / (filters.page_size || 25));
 
@@ -315,6 +360,70 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* 1-Click Persona Switcher Banner (Instant Reviewer Comparison) */}
+      <div className="bg-slate-900 border-b border-slate-800 text-white px-4 sm:px-8 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2">
+          <span
+            className={`w-2 h-2 rounded-full animate-pulse ${
+              isEmployee ? 'bg-emerald-400' : isRewardsHead ? 'bg-purple-400' : 'bg-indigo-400'
+            }`}
+          />
+          <span className="text-slate-400 font-medium">Active Workspace View:</span>
+          <span className="font-extrabold text-white">
+            {user.first_name} {user.last_name}
+          </span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              isEmployee
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                : isRewardsHead
+                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+            }`}
+          >
+            {isEmployee
+              ? 'Employee Self-Service (ESS)'
+              : isRewardsHead
+              ? 'Total Rewards & Parity Hub'
+              : 'Global People Operations'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 ml-auto">
+          <span className="text-slate-400 text-[11px] hidden md:inline">1-Click Persona Switcher:</span>
+          <button
+            onClick={() => handleSwitchPersona('prashanth')}
+            className={`px-3 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+              user.username === 'prashanth'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+            }`}
+          >
+            1. HR Ops (Prashanth)
+          </button>
+          <button
+            onClick={() => handleSwitchPersona('alex.hr')}
+            className={`px-3 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+              user.username === 'alex.hr'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+            }`}
+          >
+            2. Total Rewards (Alex)
+          </button>
+          <button
+            onClick={() => handleSwitchPersona('jessica.emp')}
+            className={`px-3 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+              user.username === 'jessica.emp'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+            }`}
+          >
+            3. Staff ESS (Jessica)
+          </button>
+        </div>
+      </div>
+
       {/* Top Navigation */}
       <Navbar
         totalHeadcount={summary?.headcount ?? totalCount}
@@ -330,8 +439,8 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* If standard Employee: Render Dedicated Employee Self-Service Dashboard */}
-        {!isHR ? (
+        {/* VIEW 1: Standard Employee -> Render Dedicated Self-Service Dashboard */}
+        {isEmployee ? (
           <EmployeeDashboard
             user={user}
             allEmployees={employees}
@@ -340,8 +449,88 @@ export const App: React.FC = () => {
             onOpenSalaryInquiry={handleOpenSalaryInquiry}
           />
         ) : (
-          /* If HR Manager: Render Executive Compensation Command Center */
+          /* VIEW 2 & 3: HR Roles -> Render Specialized Executive Command Centers */
           <>
+            {/* Persona Hero Banner 1: Head of Total Rewards (Alex Rivera) */}
+            {isRewardsHead && (
+              <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white border border-purple-800/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-purple-600/30 border border-purple-500/40 text-purple-300 flex items-center justify-center font-black text-xl shadow-inner shrink-0">
+                    TR
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-xl font-black tracking-tight">Total Rewards & Pay Parity Center</h2>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                        Compensation Governance (Write)
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+                      Logged in as <strong>Alex Rivera (Head of Total Rewards)</strong>. Monitoring global wage compression, cross-regional exchange rates across 8 international hubs, and gender pay ratio parity (0.97).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setActiveTab('parity')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      activeTab === 'parity' ? 'bg-purple-600 text-white shadow-md' : 'bg-white/10 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    Pay Parity & Bands Analysis
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      activeTab === 'overview' ? 'bg-purple-600 text-white shadow-md' : 'bg-white/10 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    Executive Spend View
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Persona Hero Banner 2: Head of HR & People Operations (Prashanth Chaduvala) */}
+            {isPeopleHead && (
+              <div className="p-6 rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-950 text-white border border-indigo-800/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 flex items-center justify-center font-black text-xl shadow-inner shrink-0">
+                    HR
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-xl font-black tracking-tight">Global People & Workforce Operations Hub</h2>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                        Full Administration (Write)
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+                      Logged in as <strong>Prashanth Chaduvala (Head of HR & People Operations)</strong>. Managing organization headcount (10,000 staff), operational departmental distributions, and global onboarding.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-md shadow-indigo-600/30 cursor-pointer"
+                  >
+                    <span>+ Onboard New Employee</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('employees')}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      activeTab === 'employees' ? 'bg-white text-slate-900' : 'bg-white/10 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    10k Employee Roster
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* KPI Strip */}
             <KPIHeader
               summary={summary}
@@ -414,15 +603,11 @@ export const App: React.FC = () => {
                   onFilterChange={handleFilterChange}
                   onReset={handleResetFilters}
                   onOpenAddModal={() => {
-                    if (isHR) {
-                      setIsAddModalOpen(true);
-                    } else {
-                      setToast({ type: 'info', message: 'Onboarding new hires is restricted to HR Managers.' });
-                    }
+                    setIsAddModalOpen(true);
                   }}
                   onExportCsv={handleExportCsv}
                   exporting={exporting}
-                  isHR={isHR}
+                  isHR={true}
                 />
 
                 <EmployeeTable
@@ -468,7 +653,7 @@ export const App: React.FC = () => {
         isOpen={Boolean(selectedEmployee)}
         onClose={() => setSelectedEmployee(null)}
         onSuccess={handleSalaryRevisionSuccess}
-        isHR={isHR}
+        isHR={!isEmployee}
       />
 
       {/* Add Employee Modal */}

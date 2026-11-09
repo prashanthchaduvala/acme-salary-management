@@ -284,20 +284,25 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
                   1-Click Instant Evaluation Logins:
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <button
                     type="button"
                     disabled={loading}
                     onClick={() => handleQuickLogin('prashanth', 'Welcome@123')}
-                    className="text-left p-2.5 rounded-xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-xs transition disabled:opacity-50 group cursor-pointer"
+                    className="text-left p-3 rounded-2xl bg-white border-2 border-indigo-200 hover:border-indigo-600 hover:shadow-md transition disabled:opacity-50 group cursor-pointer"
                   >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 uppercase">
+                        HR Operations
+                      </span>
+                      <span className="text-[10px] font-bold text-indigo-600 group-hover:translate-x-0.5 transition">→</span>
+                    </div>
                     <span className="text-xs font-bold text-slate-900 block group-hover:text-indigo-600">
                       Prashanth Chaduvala
                     </span>
-                    <span className="text-[10px] text-indigo-600 font-semibold block">HR Admin (Write)</span>
-                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">prashanthpatelc@gmail.com</span>
-                    <span className="text-[10px] font-bold text-indigo-600 mt-1 inline-block">
-                      Sign in as HR →
+                    <span className="text-[10px] text-slate-500 block">Head of People Ops</span>
+                    <span className="text-[9px] text-indigo-700 font-semibold block mt-1">
+                      View: Workforce & Onboarding
                     </span>
                   </button>
 
@@ -305,15 +310,20 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     type="button"
                     disabled={loading}
                     onClick={() => handleQuickLogin('alex.hr', 'Welcome@123')}
-                    className="text-left p-2.5 rounded-xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-xs transition disabled:opacity-50 group cursor-pointer"
+                    className="text-left p-3 rounded-2xl bg-white border-2 border-purple-200 hover:border-purple-600 hover:shadow-md transition disabled:opacity-50 group cursor-pointer"
                   >
-                    <span className="text-xs font-bold text-slate-900 block group-hover:text-indigo-600">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 uppercase">
+                        Total Rewards
+                      </span>
+                      <span className="text-[10px] font-bold text-purple-600 group-hover:translate-x-0.5 transition">→</span>
+                    </div>
+                    <span className="text-xs font-bold text-slate-900 block group-hover:text-purple-600">
                       Alex Rivera
                     </span>
-                    <span className="text-[10px] text-indigo-600 font-semibold block">Head of Total Rewards</span>
-                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">alex.hr (HR Lead)</span>
-                    <span className="text-[10px] font-bold text-indigo-600 mt-1 inline-block">
-                      Sign in as HR →
+                    <span className="text-[10px] text-slate-500 block">Head of Compensation</span>
+                    <span className="text-[9px] text-purple-700 font-semibold block mt-1">
+                      View: Pay Parity & Bands
                     </span>
                   </button>
 
@@ -321,15 +331,20 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     type="button"
                     disabled={loading}
                     onClick={() => handleQuickLogin('jessica.emp', 'Welcome@123')}
-                    className="text-left p-2.5 rounded-xl bg-white border border-emerald-200 hover:border-emerald-500 hover:shadow-xs transition disabled:opacity-50 group cursor-pointer"
+                    className="text-left p-3 rounded-2xl bg-white border-2 border-emerald-200 hover:border-emerald-600 hover:shadow-md transition disabled:opacity-50 group cursor-pointer"
                   >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 uppercase">
+                        Staff ESS
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-600 group-hover:translate-x-0.5 transition">→</span>
+                    </div>
                     <span className="text-xs font-bold text-slate-900 block group-hover:text-emerald-600">
                       Jessica Lewis
                     </span>
-                    <span className="text-[10px] text-emerald-600 font-semibold block">Staff (Read-Only)</span>
-                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">jessica.emp (Employee)</span>
-                    <span className="text-[10px] font-bold text-emerald-600 mt-1 inline-block">
-                      Sign in as Staff →
+                    <span className="text-[10px] text-slate-500 block">Senior Engineer</span>
+                    <span className="text-[9px] text-emerald-700 font-semibold block mt-1">
+                      View: My Salary & Paystub
                     </span>
                   </button>
                 </div>

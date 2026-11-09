@@ -54,7 +54,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
             pension_rate = float(struct.retirement_contribution) if struct else 5.0
             
             revisions = []
-            for r in emp.salary_revisions.all()[:5]:
+            for r in emp.revisions.all()[:5]:
                 revisions.append({
                     'id': r.id,
                     'previous_base': float(r.previous_base),
