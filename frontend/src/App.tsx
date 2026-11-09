@@ -6,7 +6,7 @@ import { FilterToolbar } from './components/FilterToolbar';
 import { EmployeeTable } from './components/EmployeeTable';
 import { ReviseSalaryModal } from './components/ReviseSalaryModal';
 import { AddEmployeeModal } from './components/AddEmployeeModal';
-import { AuthModal } from './components/AuthModal';
+import { AuthPage } from './components/AuthPage';
 import { Toast, ToastProps } from './components/Toast';
 import { api } from './services/api';
 import {
@@ -40,7 +40,6 @@ export const App: React.FC = () => {
       return null;
     }
   });
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Filter & Pagination State
   const [filters, setFilters] = useState<FilterParams>({
@@ -73,6 +72,16 @@ export const App: React.FC = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
+  // Listen for 401 Unauthorized events from API
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setUser(null);
+      setToast({ type: 'error', message: 'Your session has expired. Please sign in again.' });
+    };
+    window.addEventListener('acme_unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('acme_unauthorized', handleUnauthorized);
+  }, []);
+
   // 1. Initial Load: Currencies & verify backend session on refresh
   useEffect(() => {
     api.getCurrencies()
@@ -99,7 +108,7 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  // 2. Fetch Employee Table Data
+  // 2. Fetch Employee Table Data (when user authenticated)
   const fetchEmployees = useCallback(() => {
     setLoadingList(true);
     api.getEmployees(filters)
@@ -115,10 +124,12 @@ export const App: React.FC = () => {
   }, [filters]);
 
   useEffect(() => {
-    fetchEmployees();
-  }, [fetchEmployees]);
+    if (user) {
+      fetchEmployees();
+    }
+  }, [fetchEmployees, user]);
 
-  // 3. Fetch Executive Analytics
+  // 3. Fetch Executive Analytics (when user authenticated)
   const fetchAnalytics = useCallback(() => {
     setLoadingAnalytics(true);
     Promise.all([
@@ -140,8 +151,10 @@ export const App: React.FC = () => {
   }, [filters]);
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [fetchAnalytics]);
+    if (user) {
+      fetchAnalytics();
+    }
+  }, [fetchAnalytics, user]);
 
   // Handlers for Filters & Pagination
   const handleFilterChange = (newFilters: Partial<FilterParams>) => {
@@ -213,6 +226,22 @@ export const App: React.FC = () => {
     }
   };
 
+  // If unauthenticated: Route directly to full-page Login & Registration
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-900">
+        {toast && (
+          <Toast
+            type={toast.type}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        )}
+        <AuthPage onSuccess={handleAuthSuccess} />
+      </div>
+    );
+  }
+
   const totalPages = Math.ceil(totalCount / (filters.page_size || 25));
 
   const isFiltered = Boolean(
@@ -244,7 +273,7 @@ export const App: React.FC = () => {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         user={user}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenAuthModal={() => {}}
         onLogout={handleLogout}
       />
 
@@ -286,7 +315,7 @@ export const App: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setActiveTab('employees')}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition cursor-pointer"
                 >
                   View full registry →
                 </button>
@@ -307,12 +336,7 @@ export const App: React.FC = () => {
                   handleFilterChange({ ordering: newOrd });
                 }}
                 onSelectEmployee={(emp) => {
-                  if (!user) {
-                    setIsAuthModalOpen(true);
-                    setToast({ type: 'info', message: 'Please sign in to adjust employee compensation.' });
-                  } else {
-                    setSelectedEmployee(emp);
-                  }
+                  setSelectedEmployee(emp);
                 }}
               />
             </div>
@@ -327,12 +351,7 @@ export const App: React.FC = () => {
               onFilterChange={handleFilterChange}
               onReset={handleResetFilters}
               onOpenAddModal={() => {
-                if (!user) {
-                  setIsAuthModalOpen(true);
-                  setToast({ type: 'info', message: 'Please sign in to add new employees.' });
-                } else {
-                  setIsAddModalOpen(true);
-                }
+                setIsAddModalOpen(true);
               }}
               onExportCsv={handleExportCsv}
               exporting={exporting}
@@ -353,12 +372,7 @@ export const App: React.FC = () => {
                 handleFilterChange({ ordering: newOrd });
               }}
               onSelectEmployee={(emp) => {
-                if (!user) {
-                  setIsAuthModalOpen(true);
-                  setToast({ type: 'info', message: 'Please sign in to adjust employee compensation.' });
-                } else {
-                  setSelectedEmployee(emp);
-                }
+                setSelectedEmployee(emp);
               }}
             />
           </div>
@@ -377,13 +391,6 @@ export const App: React.FC = () => {
           </div>
         )}
       </main>
-
-      {/* Auth Modal (Sign In & Registration) */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={handleAuthSuccess}
-      />
 
       {/* Salary Revision Modal */}
       <ReviseSalaryModal

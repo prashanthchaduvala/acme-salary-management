@@ -135,9 +135,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   onClick={onLogout}
                   title="Sign Out of Workspace"
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition text-xs font-semibold"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition text-xs font-bold cursor-pointer shadow-xs"
                 >
-                  <LogOut className="w-3.5 h-3.5 text-rose-500" />
+                  <LogOut className="w-3.5 h-3.5 text-rose-600" />
                   <span>Sign Out</span>
                 </button>
               </div>

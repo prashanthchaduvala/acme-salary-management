@@ -52,10 +52,13 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    // Stale token cleanup
+    // Stale token cleanup and notification
     if (response.status === 401) {
       localStorage.removeItem('acme_auth_token');
       localStorage.removeItem('acme_auth_user');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('acme_unauthorized'));
+      }
     }
 
     let errorDetail = 'API request failed';
