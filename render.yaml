@@ -6,7 +6,7 @@ services:
     plan: free
     region: oregon
     rootDir: backend
-    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py seed_salaries --count 10000
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py seed_salaries --count 10000 && python manage.py collectstatic --noinput
     startCommand: gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
     envVars:
       - key: PYTHON_VERSION
@@ -20,12 +20,10 @@ services:
       - key: CORS_ALLOW_ALL_ORIGINS
         value: "True"
 
-  # Frontend Web Service (React 18 + Vite + Tailwind SPA)
+  # Frontend Static Site (React 18 + Vite + Tailwind SPA)
   - type: web
     name: acme-salary-frontend
     runtime: static
-    plan: free
-    region: oregon
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
@@ -35,7 +33,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          name: acme-salary-backend
-          type: web
-          property: url
+        value: https://acme-salary-backend.onrender.com/api
