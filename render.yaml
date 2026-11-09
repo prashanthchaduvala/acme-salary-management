@@ -1,0 +1,42 @@
+services:
+  # Backend Web Service (Django 5 REST Framework + Gunicorn)
+  - type: web
+    name: acme-salary-backend
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py seed_salaries --count 10000
+    startCommand: gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: "True"
+
+  # Frontend Web Service (React 18 + Vite + Tailwind SPA)
+  - type: web
+    name: acme-salary-frontend
+    runtime: static
+    plan: free
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: acme-salary-backend
+          type: web
+          property: host
+          transform: https://{host}/api
