@@ -38,5 +38,4 @@ services:
         fromService:
           name: acme-salary-backend
           type: web
-          property: host
-          transform: https://{host}/api
+          property: url

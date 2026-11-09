@@ -6,6 +6,7 @@
 [![Seeding Benchmark](https://img.shields.io/badge/10k_Seeder-5.84s-blue)](backend/compensation/management/commands/seed_salaries.py)
 [![Aggregation Latency](https://img.shields.io/badge/Org_Analytics_Latency-16.7ms-emerald)](backend/compensation/services.py)
 [![Docker Ready](https://img.shields.io/badge/Docker_Compose-Multi--Stage-indigo)](docker-compose.yml)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/prashanthchaduvala/acme-salary-management)
 
 ---
 

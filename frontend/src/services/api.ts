@@ -12,7 +12,13 @@ import {
   AuthResponse,
 } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+export function getApiBase(): string {
+  const custom = typeof window !== 'undefined' ? localStorage.getItem('acme_api_url') : null;
+  const raw = (custom || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api').trim().replace(/\/+$/, '');
+  return raw.endsWith('/api') ? raw : `${raw}/api`;
+}
+
+export const API_BASE = getApiBase();
 
 function getAuthToken(): string | null {
   return localStorage.getItem('acme_auth_token');
@@ -33,7 +39,8 @@ function buildQueryString(params?: FilterParams): string {
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
+  const base = getApiBase();
+  const url = `${base}${endpoint}`;
   const token = getAuthToken();
 
   const headers: Record<string, string> = {
@@ -162,7 +169,7 @@ export const api = {
 
   getExportCsvUrl(params?: FilterParams): string {
     const qs = buildQueryString(params);
-    return `${API_BASE}/employees/export-csv/${qs}`;
+    return `${getApiBase()}/employees/export-csv/${qs}`;
   },
 
   // Analytics endpoints
