@@ -48,7 +48,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   return (
     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
       {/* Table Top Header: Row counts & page size selector */}
-      <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50">
+      <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50">
         <div className="text-xs font-medium text-slate-600">
           Showing <span className="font-bold text-slate-900">{totalCount > 0 ? startRecord : 0}</span> to{' '}
           <span className="font-bold text-slate-900">{endRecord}</span> of{' '}
@@ -223,7 +223,7 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
       </div>
 
       {/* Pagination Footer */}
-      <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-white">
+      <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white">
         <div className="text-xs text-slate-500">
           Page <span className="font-bold text-slate-800">{currentPage}</span> of{' '}
           <span className="font-bold text-slate-800">{totalPages || 1}</span>

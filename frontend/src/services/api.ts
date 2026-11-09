@@ -18,6 +18,15 @@ export function getApiBase(): string {
   return raw.endsWith('/api') ? raw : `${raw}/api`;
 }
 
+export function setCustomApiUrl(url: string): string {
+  const clean = url.trim().replace(/\/+$/, '');
+  const finalUrl = clean.endsWith('/api') ? clean : `${clean}/api`;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('acme_api_url', finalUrl);
+  }
+  return finalUrl;
+}
+
 export const API_BASE = getApiBase();
 
 function getAuthToken(): string | null {

@@ -12,8 +12,11 @@ import {
   TrendingUp,
   Globe2,
   Users,
+  Link2,
+  CheckCircle2,
+  Settings,
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, getApiBase, setCustomApiUrl } from '../services/api';
 import { User as UserType } from '../types';
 
 interface AuthPageProps {
@@ -53,6 +56,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [customApiUrl, setCustomApiUrlState] = useState('');
+  const [showApiSettings, setShowApiSettings] = useState(false);
+  const [apiSaveSuccess, setApiSaveSuccess] = useState(false);
+
+  const handleSaveApiUrl = () => {
+    if (!customApiUrl.trim()) return;
+    setCustomApiUrl(customApiUrl);
+    setApiSaveSuccess(true);
+    setError(null);
+    setTimeout(() => setApiSaveSuccess(false), 4000);
+  };
 
   // 1-Click login for assessment reviewers
   const handleQuickLogin = async (username: string, pass: string) => {
@@ -126,9 +140,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-600/20 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900/90 backdrop-blur-md">
-        {/* Left Column: Organization & Platform Highlights */}
-        <div className="lg:col-span-5 p-8 sm:p-10 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800">
+      <div className="relative z-10 max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900/90 backdrop-blur-md">
+        {/* Left Column: Organization & Platform Highlights (Desktop / Tablet Large) */}
+        <div className="hidden lg:flex lg:col-span-5 p-8 sm:p-10 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900 flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800">
           <div>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/30">
@@ -195,14 +209,31 @@ export const AuthPage: React.FC<AuthPageProps> = ({
         </div>
 
         {/* Right Column: Sign In & Registration Form Card */}
-        <div className="lg:col-span-7 p-8 sm:p-10 bg-white flex flex-col justify-center">
+        <div className="lg:col-span-7 p-5 sm:p-8 lg:p-10 bg-white flex flex-col justify-center">
+          {/* Mobile-Only Header Brand Bar */}
+          <div className="flex lg:hidden items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="font-extrabold text-slate-900 text-base tracking-tight leading-none block">ACME Org</span>
+                <span className="text-[10px] font-semibold text-indigo-600 block mt-0.5">Salary Management</span>
+              </div>
+            </div>
+            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+              SOC2 Ready
+            </span>
+          </div>
+
           {/* Top Tab Switcher */}
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+          <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
             <div>
-              <h2 className="text-xl font-extrabold text-slate-900">
+              <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
                 {mode === 'login' ? 'HR Portal Sign In' : 'Create HR Account'}
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
                 {mode === 'login'
                   ? 'Access compensation dashboards and staff salary registry'
                   : 'Register a new authorized HR administrator profile'}
@@ -238,8 +269,52 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium">
-              {error}
+            <div className="mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="font-bold text-rose-900 block">{error}</span>
+                  {error.toLowerCase().includes('fetch') && (
+                    <span className="text-[11px] text-rose-700 block mt-0.5">
+                      Backend unreachable at <code className="bg-white/80 px-1 py-0.5 rounded font-mono text-indigo-700">{getApiBase()}</code>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {error.toLowerCase().includes('fetch') && (
+                <div className="p-3 bg-white rounded-lg border border-rose-200 text-slate-700 space-y-2 mt-2 shadow-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800 text-[11px]">
+                    <Link2 className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Connect Backend API Endpoint</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Render assigns a unique domain to your backend (e.g. <code className="text-slate-800 font-mono">https://acme-salary-backend-xxxx.onrender.com</code>). Enter your backend URL below to connect:
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="https://acme-salary-backend-xxxx.onrender.com"
+                      value={customApiUrl}
+                      onChange={(e) => setCustomApiUrlState(e.target.value)}
+                      className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveApiUrl}
+                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition shadow-xs cursor-pointer flex items-center gap-1"
+                    >
+                      <span>Connect</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {apiSaveSuccess && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Backend endpoint updated! You can now click any Quick Login or Sign In.</span>
             </div>
           )}
 
@@ -490,6 +565,41 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                 </p>
               </div>
             </form>
+          )}
+
+          {/* Footer API server indicator */}
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <button
+              type="button"
+              onClick={() => setShowApiSettings(!showApiSettings)}
+              className="text-slate-400 hover:text-indigo-600 transition flex items-center gap-1 cursor-pointer"
+            >
+              <Settings className="w-3 h-3" />
+              <span>API Server: <span className="font-mono text-[10px] text-slate-500">{getApiBase().replace(/^https?:\/\//, '')}</span></span>
+            </button>
+            <span className="text-[10px] text-slate-400">v1.0.0</span>
+          </div>
+
+          {showApiSettings && !error?.toLowerCase().includes('fetch') && (
+            <div className="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 space-y-2">
+              <span className="font-bold text-[11px] text-slate-800 block">Configure Backend API URL</span>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="https://acme-salary-backend-xxxx.onrender.com"
+                  value={customApiUrl}
+                  onChange={(e) => setCustomApiUrlState(e.target.value)}
+                  className="flex-1 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveApiUrl}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition cursor-pointer"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

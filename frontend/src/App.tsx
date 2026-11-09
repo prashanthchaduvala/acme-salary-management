@@ -361,19 +361,19 @@ export const App: React.FC = () => {
       )}
 
       {/* 1-Click Persona Switcher Banner (Instant Reviewer Comparison) */}
-      <div className="bg-slate-900 border-b border-slate-800 text-white px-4 sm:px-8 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-2">
+      <div className="bg-slate-900 border-b border-slate-800 text-white px-3 sm:px-6 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2 flex-wrap">
           <span
-            className={`w-2 h-2 rounded-full animate-pulse ${
+            className={`w-2 h-2 rounded-full shrink-0 animate-pulse ${
               isEmployee ? 'bg-emerald-400' : isRewardsHead ? 'bg-purple-400' : 'bg-indigo-400'
             }`}
           />
-          <span className="text-slate-400 font-medium">Active Workspace View:</span>
-          <span className="font-extrabold text-white">
+          <span className="text-slate-400 font-medium text-[11px] sm:text-xs">Active View:</span>
+          <span className="font-extrabold text-white text-[11px] sm:text-xs">
             {user.first_name} {user.last_name}
           </span>
           <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+            className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold ${
               isEmployee
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                 : isRewardsHead
@@ -382,18 +382,18 @@ export const App: React.FC = () => {
             }`}
           >
             {isEmployee
-              ? 'Employee Self-Service (ESS)'
+              ? 'Employee ESS'
               : isRewardsHead
-              ? 'Total Rewards & Parity Hub'
-              : 'Global People Operations'}
+              ? 'Total Rewards'
+              : 'HR Ops'}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 ml-auto">
-          <span className="text-slate-400 text-[11px] hidden md:inline">1-Click Persona Switcher:</span>
+        <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto scrollbar-none pb-0.5 sm:pb-0">
+          <span className="text-slate-400 text-[10px] hidden xl:inline shrink-0">Switch Persona:</span>
           <button
             onClick={() => handleSwitchPersona('prashanth')}
-            className={`px-3 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold whitespace-nowrap transition cursor-pointer shrink-0 ${
               user.username === 'prashanth'
                 ? 'bg-indigo-600 text-white shadow-xs'
                 : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
@@ -403,7 +403,7 @@ export const App: React.FC = () => {
           </button>
           <button
             onClick={() => handleSwitchPersona('alex.hr')}
-            className={`px-3 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold whitespace-nowrap transition cursor-pointer shrink-0 ${
               user.username === 'alex.hr'
                 ? 'bg-purple-600 text-white shadow-xs'
                 : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
@@ -413,7 +413,7 @@ export const App: React.FC = () => {
           </button>
           <button
             onClick={() => handleSwitchPersona('jessica.emp')}
-            className={`px-3 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold whitespace-nowrap transition cursor-pointer shrink-0 ${
               user.username === 'jessica.emp'
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
@@ -438,7 +438,7 @@ export const App: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
         {/* VIEW 1: Standard Employee -> Render Dedicated Self-Service Dashboard */}
         {isEmployee ? (
           <EmployeeDashboard
@@ -453,36 +453,36 @@ export const App: React.FC = () => {
           <>
             {/* Persona Hero Banner 1: Head of Total Rewards (Alex Rivera) */}
             {isRewardsHead && (
-              <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white border border-purple-800/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-purple-600/30 border border-purple-500/40 text-purple-300 flex items-center justify-center font-black text-xl shadow-inner shrink-0">
+              <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white border border-purple-800/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-purple-600/30 border border-purple-500/40 text-purple-300 flex items-center justify-center font-black text-lg sm:text-xl shadow-inner shrink-0">
                     TR
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-xl font-black tracking-tight">Total Rewards & Pay Parity Center</h2>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                        Compensation Governance (Write)
+                      <h2 className="text-lg sm:text-xl font-black tracking-tight">Total Rewards & Pay Parity Center</h2>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                        Governance (Write)
                       </span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+                    <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
                       Logged in as <strong>Alex Rivera (Head of Total Rewards)</strong>. Monitoring global wage compression, cross-regional exchange rates across 8 international hubs, and gender pay ratio parity (0.97).
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                   <button
                     onClick={() => setActiveTab('parity')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    className={`flex-1 sm:flex-initial px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer text-center ${
                       activeTab === 'parity' ? 'bg-purple-600 text-white shadow-md' : 'bg-white/10 text-slate-300 hover:text-white'
                     }`}
                   >
-                    Pay Parity & Bands Analysis
+                    Pay Parity & Bands
                   </button>
                   <button
                     onClick={() => setActiveTab('overview')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    className={`flex-1 sm:flex-initial px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer text-center ${
                       activeTab === 'overview' ? 'bg-purple-600 text-white shadow-md' : 'bg-white/10 text-slate-300 hover:text-white'
                     }`}
                   >
@@ -494,34 +494,34 @@ export const App: React.FC = () => {
 
             {/* Persona Hero Banner 2: Head of HR & People Operations (Prashanth Chaduvala) */}
             {isPeopleHead && (
-              <div className="p-6 rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-950 text-white border border-indigo-800/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 flex items-center justify-center font-black text-xl shadow-inner shrink-0">
+              <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-950 text-white border border-indigo-800/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 flex items-center justify-center font-black text-lg sm:text-xl shadow-inner shrink-0">
                     HR
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-xl font-black tracking-tight">Global People & Workforce Operations Hub</h2>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                      <h2 className="text-lg sm:text-xl font-black tracking-tight">Global People & Workforce Operations Hub</h2>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
                         Full Administration (Write)
                       </span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+                    <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
                       Logged in as <strong>Prashanth Chaduvala (Head of HR & People Operations)</strong>. Managing organization headcount (10,000 staff), operational departmental distributions, and global onboarding.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                   <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-md shadow-indigo-600/30 cursor-pointer"
+                    className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-md shadow-indigo-600/30 cursor-pointer"
                   >
                     <span>+ Onboard New Employee</span>
                   </button>
                   <button
                     onClick={() => setActiveTab('employees')}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    className={`flex-1 sm:flex-initial px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer text-center ${
                       activeTab === 'employees' ? 'bg-white text-slate-900' : 'bg-white/10 text-slate-300 hover:text-white'
                     }`}
                   >

@@ -125,24 +125,24 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
         <div className="absolute bottom-0 left-1/3 -mb-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center font-extrabold text-2xl shadow-lg shadow-emerald-500/30 ring-4 ring-white/10">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center font-extrabold text-xl sm:text-2xl shadow-lg shadow-emerald-500/30 ring-4 ring-white/10 shrink-0">
               {fullName
                 .split(' ')
                 .map((n) => n[0])
                 .join('')}
             </div>
             <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-2xl font-black tracking-tight">{fullName}</h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight">{fullName}</h1>
+                <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   Staff Self-Service
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-slate-300">
                   ID: {record.employee_id}
                 </span>
               </div>
-              <p className="text-sm text-slate-300 mt-1 flex items-center gap-3 flex-wrap">
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 flex items-center gap-2 sm:gap-3 flex-wrap">
                 <span className="font-semibold text-white">{record.job_title}</span>
                 <span>•</span>
                 <span className="flex items-center gap-1 text-slate-400">
@@ -159,7 +159,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
           </div>
 
           {/* Quick Payday & Deposit Status Pill */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-3.5 backdrop-blur-md">
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-2xl p-3.5 backdrop-blur-md">
             <div className="text-left">
               <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
                 Next Payday Deposit
@@ -181,39 +181,39 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
         </div>
 
         {/* Sub-bar tabs */}
-        <div className="relative z-10 flex items-center gap-2 mt-8 pt-4 border-t border-white/10">
+        <div className="relative z-10 flex items-center gap-2 mt-6 sm:mt-8 pt-4 border-t border-white/10 overflow-x-auto scrollbar-none pb-1">
           <button
             onClick={() => setActiveTab('rewards')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'rewards'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
           >
             <DollarSign className="w-3.5 h-3.5 text-indigo-600" />
-            <span>My Compensation & Benefits</span>
+            <span>Compensation & Benefits</span>
           </button>
           <button
             onClick={() => setActiveTab('timeline')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'timeline'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Salary Growth & Promotions</span>
+            <span>Growth & Promotions</span>
           </button>
           <button
             onClick={() => setActiveTab('directory')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'directory'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
           >
             <Building2 className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Company Teammates (Directory)</span>
+            <span>Teammates Directory</span>
           </button>
         </div>
       </div>
@@ -416,11 +416,11 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
               </div>
 
               {/* Inquiry Action */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                 <span className="text-slate-500">Have questions about your compensation?</span>
                 <button
                   onClick={onOpenSalaryInquiry}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                  className="w-full sm:w-auto justify-center px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition flex items-center gap-1.5 cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Contact HR Team</span>
