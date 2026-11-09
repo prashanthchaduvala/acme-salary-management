@@ -8,9 +8,15 @@ import {
   GeoMetric,
   PayParityData,
   CurrencyRate,
+  User,
+  AuthResponse,
 } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+
+function getAuthToken(): string | null {
+  return localStorage.getItem('acme_auth_token');
+}
 
 function buildQueryString(params?: FilterParams): string {
   if (!params) return '';
@@ -28,20 +34,36 @@ function buildQueryString(params?: FilterParams): string {
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
+  const token = getAuthToken();
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    ...(options?.headers as Record<string, string>),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Token ${token}`;
+  }
+
   const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      ...options?.headers,
-    },
     ...options,
+    headers,
   });
 
   if (!response.ok) {
     let errorDetail = 'API request failed';
     try {
       const errJson = await response.json();
-      errorDetail = JSON.stringify(errJson);
+      if (typeof errJson === 'object' && errJson !== null) {
+        // Collect messages
+        const msgs = Object.entries(errJson)
+          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(' ') : v}`)
+          .join(' | ');
+        errorDetail = msgs || JSON.stringify(errJson);
+      } else {
+        errorDetail = String(errJson);
+      }
     } catch {
       errorDetail = `Status: ${response.status} ${response.statusText}`;
     }
@@ -52,6 +74,52 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  // Authentication endpoints
+  async login(data: { username: string; password: string }): Promise<AuthResponse> {
+    const res = await request<AuthResponse>('/auth/login/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (res.token) {
+      localStorage.setItem('acme_auth_token', res.token);
+      localStorage.setItem('acme_auth_user', JSON.stringify(res.user));
+    }
+    return res;
+  },
+
+  async register(data: {
+    username: string;
+    email: string;
+    password: string;
+    first_name?: string;
+    last_name?: string;
+    role?: string;
+    department?: string;
+  }): Promise<AuthResponse> {
+    const res = await request<AuthResponse>('/auth/register/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (res.token) {
+      localStorage.setItem('acme_auth_token', res.token);
+      localStorage.setItem('acme_auth_user', JSON.stringify(res.user));
+    }
+    return res;
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await request('/auth/logout/', { method: 'POST' });
+    } finally {
+      localStorage.removeItem('acme_auth_token');
+      localStorage.removeItem('acme_auth_user');
+    }
+  },
+
+  async getMe(): Promise<{ isAuthenticated: boolean; user: User | null }> {
+    return request<{ isAuthenticated: boolean; user: User | null }>('/auth/me/');
+  },
+
   // Employee endpoints
   async getEmployees(params?: FilterParams): Promise<PaginatedResponse<Employee>> {
     const qs = buildQueryString(params);

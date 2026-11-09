@@ -1,3 +1,19 @@
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  department: string;
+}
+
+export interface AuthResponse {
+  message: string;
+  token: string;
+  user: User;
+}
+
 export interface SalaryStructure {
   id?: number;
   base_salary: string | number;

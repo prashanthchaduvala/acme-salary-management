@@ -6,8 +6,10 @@ from datetime import date, timedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 
-from compensation.models import Employee, SalaryStructure, SalaryRevisionHistory, CurrencyRate
+from compensation.models import Employee, SalaryStructure, SalaryRevisionHistory, CurrencyRate, UserProfile
 from compensation.services import CurrencyService, DEFAULT_CURRENCIES
 
 FIRST_NAMES = [
@@ -156,9 +158,23 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE(f"=== ACME Organization Salary Seeder (Target: {count:,} employees) ==="))
         start_time = time.time()
 
-        # Step 1: Ensure Currency rates are present
+        # Step 1: Ensure Currency rates and default HR users are present
         CurrencyService.initialize_default_rates()
-        self.stdout.write(self.style.SUCCESS("[1/4] Currency exchange rates initialized."))
+        default_users = [
+            {'u': 'alex.hr', 'e': 'alex.hr@acme.org', 'p': 'Password123!', 'f': 'Alex', 'l': 'Rivera', 'r': 'Head of HR & Total Rewards', 'd': 'People Operations'},
+            {'u': 'pchaduvala', 'e': 'pchaduvala@gmail.com', 'p': 'Password123!', 'f': 'Praveen', 'l': 'Chaduvala', 'r': 'HR Operations Lead', 'd': 'Global People & Compensation'}
+        ]
+        for du in default_users:
+            usr, created = User.objects.get_or_create(
+                username=du['u'],
+                defaults={'email': du['e'], 'first_name': du['f'], 'last_name': du['l']}
+            )
+            usr.set_password(du['p'])
+            usr.save()
+            UserProfile.objects.update_or_create(user=usr, defaults={'role': du['r'], 'department': du['d']})
+            Token.objects.get_or_create(user=usr)
+
+        self.stdout.write(self.style.SUCCESS("[1/4] Currency exchange rates & HR accounts initialized."))
 
         # Step 2: Clean existing records if requested
         if clean:

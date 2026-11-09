@@ -6,6 +6,7 @@ import { FilterToolbar } from './components/FilterToolbar';
 import { EmployeeTable } from './components/EmployeeTable';
 import { ReviseSalaryModal } from './components/ReviseSalaryModal';
 import { AddEmployeeModal } from './components/AddEmployeeModal';
+import { AuthModal } from './components/AuthModal';
 import { Toast, ToastProps } from './components/Toast';
 import { api } from './services/api';
 import {
@@ -17,6 +18,7 @@ import {
   GeoMetric,
   PayParityData,
   CurrencyRate,
+  User,
 } from './types';
 
 export const App: React.FC = () => {
@@ -24,6 +26,17 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'employees' | 'parity'>('overview');
   const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
   const [currencies, setCurrencies] = useState<CurrencyRate[]>([]);
+
+  // Auth State
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const stored = localStorage.getItem('acme_auth_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Filter & Pagination State
   const [filters, setFilters] = useState<FilterParams>({
@@ -56,14 +69,23 @@ export const App: React.FC = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
-  // 1. Load initial static metadata (currencies & initial health)
+  // 1. Load initial static metadata (currencies & sync current user)
   useEffect(() => {
     api.getCurrencies()
       .then((data) => setCurrencies(data))
       .catch((err) => console.error('Failed to load currencies:', err));
+
+    api.getMe()
+      .then((res) => {
+        if (res.isAuthenticated && res.user) {
+          setUser(res.user);
+          localStorage.setItem('acme_auth_user', JSON.stringify(res.user));
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  // 2. Fetch Employee Table Data (whenever page, ordering, or search filters change)
+  // 2. Fetch Employee Table Data
   const fetchEmployees = useCallback(() => {
     setLoadingList(true);
     api.getEmployees(filters)
@@ -82,7 +104,7 @@ export const App: React.FC = () => {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  // 3. Fetch Executive Analytics (Summary, Depts, Geo, Parity)
+  // 3. Fetch Executive Analytics
   const fetchAnalytics = useCallback(() => {
     setLoadingAnalytics(true);
     Promise.all([
@@ -155,6 +177,20 @@ export const App: React.FC = () => {
     fetchAnalytics();
   };
 
+  const handleAuthSuccess = (authenticatedUser: User) => {
+    setUser(authenticatedUser);
+    setToast({
+      type: 'success',
+      message: `Welcome back, ${authenticatedUser.first_name || authenticatedUser.username}! (${authenticatedUser.role || 'HR Lead'})`,
+    });
+  };
+
+  const handleLogout = async () => {
+    await api.logout();
+    setUser(null);
+    setToast({ type: 'info', message: 'You have been signed out safely.' });
+  };
+
   const totalPages = Math.ceil(totalCount / (filters.page_size || 25));
 
   const isFiltered = Boolean(
@@ -185,6 +221,9 @@ export const App: React.FC = () => {
         onSelectCurrency={setSelectedCurrency}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        user={user}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
@@ -245,7 +284,14 @@ export const App: React.FC = () => {
                   const newOrd = filters.ordering === field ? `-${field}` : field;
                   handleFilterChange({ ordering: newOrd });
                 }}
-                onSelectEmployee={setSelectedEmployee}
+                onSelectEmployee={(emp) => {
+                  if (!user) {
+                    setIsAuthModalOpen(true);
+                    setToast({ type: 'info', message: 'Please sign in to adjust compensation records.' });
+                  } else {
+                    setSelectedEmployee(emp);
+                  }
+                }}
               />
             </div>
           </div>
@@ -258,7 +304,14 @@ export const App: React.FC = () => {
               filters={filters}
               onFilterChange={handleFilterChange}
               onReset={handleResetFilters}
-              onOpenAddModal={() => setIsAddModalOpen(true)}
+              onOpenAddModal={() => {
+                if (!user) {
+                  setIsAuthModalOpen(true);
+                  setToast({ type: 'info', message: 'Please sign in to add new employees.' });
+                } else {
+                  setIsAddModalOpen(true);
+                }
+              }}
               onExportCsv={handleExportCsv}
               exporting={exporting}
             />
@@ -277,7 +330,14 @@ export const App: React.FC = () => {
                 const newOrd = filters.ordering === field ? `-${field}` : field;
                 handleFilterChange({ ordering: newOrd });
               }}
-              onSelectEmployee={setSelectedEmployee}
+              onSelectEmployee={(emp) => {
+                if (!user) {
+                  setIsAuthModalOpen(true);
+                  setToast({ type: 'info', message: 'Please sign in to adjust compensation records.' });
+                } else {
+                  setSelectedEmployee(emp);
+                }
+              }}
             />
           </div>
         )}
@@ -295,6 +355,13 @@ export const App: React.FC = () => {
           </div>
         )}
       </main>
+
+      {/* Auth Modal (Sign In & Registration) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
 
       {/* Salary Revision Modal */}
       <ReviseSalaryModal
@@ -317,9 +384,9 @@ export const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
           <p>© 2026 ACME Organization — Total Rewards & Workforce Compensation System.</p>
           <div className="flex items-center gap-4">
-            <span>Optimized for 10,000 Global Employees</span>
+            <span>Candidate: Praveen Chaduvala (pchaduvala@gmail.com)</span>
             <span>•</span>
-            <span>Sub-second Aggregation Engine</span>
+            <span>10,000 Records Scaled</span>
           </div>
         </div>
       </footer>

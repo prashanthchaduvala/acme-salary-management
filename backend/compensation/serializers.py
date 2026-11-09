@@ -1,8 +1,76 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
 from decimal import Decimal
 from django.utils import timezone
-from .models import Employee, SalaryStructure, SalaryRevisionHistory, CurrencyRate
+from .models import Employee, SalaryStructure, SalaryRevisionHistory, CurrencyRate, UserProfile
 from .services import CurrencyService
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(source='profile.role', read_only=True)
+    department = serializers.CharField(source='profile.department', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'department']
+
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=6)
+    role = serializers.CharField(write_only=True, required=False, default='HR Manager')
+    department = serializers.CharField(write_only=True, required=False, default='People Operations')
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'role', 'department']
+
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("A user with this username already exists.")
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("A user with this corporate email already exists.")
+        return value
+
+    def create(self, validated_data):
+        role = validated_data.pop('role', 'HR Manager')
+        department = validated_data.pop('department', 'People Operations')
+        password = validated_data.pop('password')
+
+        user = User.objects.create_user(password=password, **validated_data)
+        UserProfile.objects.create(user=user, role=role, department=department)
+        Token.objects.create(user=user)
+        return user
+
+
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+
+        # Allow logging in with either username or email
+        user = authenticate(username=username, password=password)
+        if not user:
+            # Check if username passed was an email
+            user_by_email = User.objects.filter(email__iexact=username).first()
+            if user_by_email:
+                user = authenticate(username=user_by_email.username, password=password)
+
+        if not user:
+            raise serializers.ValidationError("Invalid credentials. Please verify username/email and password.")
+
+        if not user.is_active:
+            raise serializers.ValidationError("This HR account is currently disabled.")
+
+        data['user'] = user
+        return data
 
 
 class CurrencyRateSerializer(serializers.ModelSerializer):

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Building2, Globe, ShieldCheck, Users } from 'lucide-react';
-import { CurrencyRate } from '../types';
+import { Building2, Globe, ShieldCheck, Users, LogIn, LogOut } from 'lucide-react';
+import { CurrencyRate, User } from '../types';
 
 interface NavbarProps {
   totalHeadcount?: number;
@@ -9,6 +9,9 @@ interface NavbarProps {
   onSelectCurrency: (currency: string) => void;
   activeTab: 'overview' | 'employees' | 'parity';
   setActiveTab: (tab: 'overview' | 'employees' | 'parity') => void;
+  user: User | null;
+  onOpenAuthModal: () => void;
+  onLogout: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -18,7 +21,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectCurrency,
   activeTab,
   setActiveTab,
+  user,
+  onOpenAuthModal,
+  onLogout,
 }) => {
+  const getInitials = (u: User) => {
+    if (u.first_name && u.last_name) {
+      return `${u.first_name[0]}${u.last_name[0]}`.toUpperCase();
+    }
+    return u.username.slice(0, 2).toUpperCase();
+  };
+
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,12 +88,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             </nav>
           </div>
 
-          {/* Right Controls: Currency Toggle & Persona */}
-          <div className="flex items-center gap-4">
+          {/* Right Controls: Currency Toggle & Auth */}
+          <div className="flex items-center gap-3">
             {/* Currency selector */}
             <div className="flex items-center gap-2 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200/80">
               <Globe className="w-4 h-4 text-slate-500" />
-              <label htmlFor="currency-select" className="text-xs font-medium text-slate-600">Base Currency:</label>
+              <label htmlFor="currency-select" className="text-xs font-medium text-slate-600">Currency:</label>
               <select
                 id="currency-select"
                 value={selectedCurrency}
@@ -98,22 +111,46 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Headcount Badge */}
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-semibold">
               <Users className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{totalHeadcount.toLocaleString()} Active Staff</span>
+              <span>{totalHeadcount.toLocaleString()} Staff</span>
             </div>
 
-            {/* Persona Avatar */}
-            <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs ring-2 ring-indigo-500/20">
-                AL
-              </div>
-              <div className="hidden lg:block text-left">
-                <p className="text-xs font-bold text-slate-900 leading-none">Alex Rivera</p>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <ShieldCheck className="w-3 h-3 text-indigo-600" />
-                  <span className="text-[10px] text-slate-500 font-medium">Head of HR & Rewards</span>
+            {/* Auth Section */}
+            {user ? (
+              <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-indigo-500/20">
+                    {getInitials(user)}
+                  </div>
+                  <div className="hidden lg:block text-left">
+                    <p className="text-xs font-bold text-slate-900 leading-none">
+                      {user.first_name ? `${user.first_name} ${user.last_name}` : user.username}
+                    </p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <ShieldCheck className="w-3 h-3 text-indigo-600" />
+                      <span className="text-[10px] text-slate-500 font-medium">{user.role || 'HR Lead'}</span>
+                    </div>
+                  </div>
                 </div>
+
+                <button
+                  onClick={onLogout}
+                  title="Sign Out"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
-            </div>
+            ) : (
+              <div className="pl-3 border-l border-slate-200">
+                <button
+                  onClick={onOpenAuthModal}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>HR Sign In</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

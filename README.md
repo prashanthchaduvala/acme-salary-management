@@ -2,7 +2,7 @@
 > **Production-grade Compensation Platform engineered for an organization of 10,000 employees.**  
 > Built with Django 5 + Django REST Framework (Backend) and React 18 + TypeScript + Tailwind CSS (Frontend).
 
-[![Django Tests](https://img.shields.io/badge/Django_Tests-15_Passed_100%25-success)](backend/compensation/tests/)
+[![Django Tests](https://img.shields.io/badge/Django_Tests-22_Passed_100%25-success)](backend/compensation/tests/)
 [![Seeding Benchmark](https://img.shields.io/badge/10k_Seeder-5.84s-blue)](backend/compensation/management/commands/seed_salaries.py)
 [![Aggregation Latency](https://img.shields.io/badge/Org_Analytics_Latency-16.7ms-emerald)](backend/compensation/services.py)
 [![Docker Ready](https://img.shields.io/badge/Docker_Compose-Multi--Stage-indigo)](docker-compose.yml)
@@ -26,6 +26,7 @@ A purpose-built, web-based Salary Management Platform built specifically for the
 3. **High-Performance Employee Registry (10,000 Scale):** Server-side paginated data table with multi-attribute filtering, debounced search, and compound-indexed sorting (<20ms response).
 4. **Compensation Adjustment & Audit Trail:** Interactive modal to revise base salary, adjust target bonus %, view live increment deltas, and review the immutable historical revisions log.
 5. **Verified Payroll Exports:** Stream filtered datasets directly to CSV.
+6. **Enterprise Authentication:** Token-based HR security with self-service registration and pre-configured role profiles.
 
 ---
 
@@ -43,18 +44,19 @@ salary-management/
 ├── backend/                               # Django 5 + Django REST Framework
 │   ├── core/                              # Project configuration (settings, urls, wsgi)
 │   ├── compensation/                      # Core business domain app
-│   │   ├── models.py                      # Employee, SalaryStructure, SalaryRevision, CurrencyRate
+│   │   ├── models.py                      # Employee, SalaryStructure, SalaryRevision, UserProfile, CurrencyRate
 │   │   ├── services.py                    # Analytical aggregators & revision business logic
-│   │   ├── serializers.py                 # DRF serializers (lightweight list & deep detail)
-│   │   ├── views.py                       # Filtered ViewSets, export-csv, and analytics endpoints
+│   │   ├── serializers.py                 # DRF serializers (Auth, Employee, Revisions)
+│   │   ├── views.py                       # Auth views, Filtered ViewSets, export-csv, and analytics endpoints
 │   │   ├── urls.py                        # REST routing
-│   │   ├── tests/                         # Fast, deterministic unit test suite (15 tests)
+│   │   ├── tests/                         # Fast, deterministic unit test suite (22 tests)
+│   │   │   ├── test_auth.py               # Authentication tests (Register, Login, Token, Logout)
 │   │   │   ├── test_models.py             # Model calculations, gross/net, tax deductions
 │   │   │   ├── test_services.py           # Currency conversions, analytics math, revisions
 │   │   │   ├── test_views.py              # Endpoints, filters, pagination, export, revisions
 │   │   │   └── test_seeder.py             # Verification of 10k database seeding command
 │   │   └── management/commands/
-│   │       └── seed_salaries.py           # Optimized bulk seeder (10,000 employees in <6s)
+│   │       └── seed_salaries.py           # Bulk seeder (10,000 employees & default HR accounts)
 │   ├── requirements.txt                   # Locked Python dependencies
 │   ├── Dockerfile                         # Python 3.12 slim container
 │   ├── .env.example                       # Reference environment template
@@ -63,11 +65,12 @@ salary-management/
 │   └── .env.production                    # Production settings
 ├── frontend/                              # React 18 + TypeScript + Vite + Tailwind CSS
 │   ├── src/
-│   │   ├── types/                         # Strict TypeScript interfaces for financial models
-│   │   ├── services/                      # Axios/Fetch API client with query string builder
+│   │   ├── types/                         # Strict TypeScript interfaces for financial & auth models
+│   │   ├── services/                      # Axios/Fetch API client with token injector
 │   │   ├── utils/                         # Currency, compact number, and date formatters
 │   │   ├── components/
-│   │   │   ├── Navbar.tsx                 # Header, base currency selector, headcount badge
+│   │   │   ├── Navbar.tsx                 # Header, user session profile, currency selector, headcount
+│   │   │   ├── AuthModal.tsx              # Sign In & Registration dialog with Quick-Fill shortcuts
 │   │   │   ├── KPIHeader.tsx              # 4-card metric strip with live currency conversions
 │   │   │   ├── AnalyticsCharts.tsx        # Recharts visualizations (Dept, Geo, Pay Parity)
 │   │   │   ├── FilterToolbar.tsx          # Multi-faceted dropdowns & debounced search
@@ -75,7 +78,7 @@ salary-management/
 │   │   │   ├── ReviseSalaryModal.tsx      # Salary adjustment modal with live delta & audit history
 │   │   │   ├── AddEmployeeModal.tsx       # Onboard new employee modal
 │   │   │   └── Toast.tsx                  # Floating alert toast notifications
-│   │   ├── App.tsx                        # Master layout, state sync, and tab switching
+│   │   ├── App.tsx                        # Master layout, auth state sync, and tab switching
 │   │   ├── main.tsx                       # React DOM entrypoint
 │   │   └── index.css                      # Tailwind base & custom scrollbar styles
 │   ├── nginx.conf                         # High-performance Nginx reverse-proxy configuration
@@ -85,6 +88,7 @@ salary-management/
 │   ├── .env.local                         # Local frontend env
 │   ├── .env.development                   # Dev server frontend env
 │   └── .env.production                    # Production frontend env
+├── run_locally.bat                        # 1-Click launcher for Windows local development
 ├── docker-compose.yml                     # Unified multi-container orchestration
 ├── .gitignore                             # Git ignore rules
 └── README.md                              # Main documentation (this file)
@@ -121,41 +125,33 @@ Both the `backend` and `frontend` folders contain dedicated `.env` files for dif
 - **Node.js 18+** (Node.js 20 LTS recommended) & npm
 - **Git**
 
-### Step 1: Clone the Repository
-```bash
-git clone <repository-url>
-cd salary-management
-```
+### Method A: 1-Click Launch (Windows)
+Double-click `run_locally.bat` in the root folder. It starts both Django (port 8000) and React (port 5173) in separate windows.
 
-### Step 2: Backend Setup (Django)
+### Method B: Manual Step-by-Step
+
+#### Step 1: Backend Setup (Django)
 ```bash
 cd backend
 
-# 1. (Optional) Create and activate a virtual environment
-python -m venv venv
-# On Windows:
-.\venv\Scripts\activate
-# On Linux/macOS:
-# source venv/bin/activate
-
-# 2. Install dependencies
+# 1. Install dependencies
 pip install -r requirements.txt
 
-# 3. Run database migrations
+# 2. Run database migrations
 python manage.py migrate
 
-# 4. Seed the database with 10,000 realistic employee records
-python manage.py seed_salaries --clean --count 10000
+# 3. Seed the database with 10,000 realistic employee records & default HR accounts
+python manage.py seed_salaries --count 10000
 
-# 5. Run the automated unit test suite
-python manage.py test
+# 4. Run the automated unit test suite (22 tests)
+python manage.py test compensation
 
-# 6. Start the Django API server
+# 5. Start the Django API server
 python manage.py runserver 0.0.0.0:8000
 ```
 *The backend API will be live at `http://localhost:8000/api/`.*
 
-### Step 3: Frontend Setup (React + Vite)
+#### Step 2: Frontend Setup (React + Vite)
 In a new terminal window:
 ```bash
 cd frontend
@@ -170,9 +166,22 @@ npm run dev
 
 ---
 
-## 5. Seeding Benchmark: 10,000 Employees in Under 6 Seconds
+## 5. Pre-Configured HR User Accounts & Security
 
-The assessment requires seeding **10,000 employees**. A naive implementation executing row-by-row `.save()` calls in Django takes over 3 minutes.
+The system includes token-based authentication and role-based profiles. The following accounts are pre-seeded and ready to use:
+
+| Username / Email | Password | Full Name | Role |
+| :--- | :--- | :--- | :--- |
+| **`pchaduvala`** (`pchaduvala@gmail.com`) | `Password123!` | Praveen Chaduvala | HR Operations Lead |
+| **`alex.hr`** (`alex.hr@acme.org`) | `Password123!` | Alex Rivera | Head of HR & Total Rewards |
+
+*The UI includes "Quick Assessment Login" buttons on the Sign In modal to log in with one click without typing.*
+
+---
+
+## 6. Seeding Benchmark: 10,000 Employees in Under 6 Seconds
+
+The assessment requires seeding **10,000 employees**. A naive implementation executing row-by-row `.save()` calls takes over 3 minutes.
 
 Our seeder (`backend/compensation/management/commands/seed_salaries.py`) uses an optimized architecture:
 1. **Pre-computes objects in memory** with realistic demographic distributions:
@@ -191,7 +200,7 @@ Our seeder (`backend/compensation/management/commands/seed_salaries.py`) uses an
 ### Seeding Performance Verification
 ```
 === ACME Organization Salary Seeder (Target: 10,000 employees) ===
-[1/4] Currency exchange rates initialized.
+[1/4] Currency exchange rates & HR accounts initialized.
 [2/4] Building memory objects with realistic compensation distributions...
 [3/4] Executing batch database bulk inserts...
 [4/4] Successfully seeded database!
@@ -203,28 +212,34 @@ Our seeder (`backend/compensation/management/commands/seed_salaries.py`) uses an
 
 ---
 
-## 6. Meaningful Automated Unit Test Suite
+## 7. Meaningful Automated Unit Test Suite
 
-The backend includes a comprehensive, fast, and deterministic test suite covering models, aggregations, services, API endpoints, and seeding.
+The backend includes a comprehensive, fast, and deterministic test suite covering authentication, models, aggregations, services, API endpoints, and seeding.
 
 ### Running the Tests:
 ```bash
 cd backend
-python manage.py test
+python manage.py test compensation
 ```
 
 ### Test Results:
 ```
 Creating test database for alias 'default'...
-...............
+......................
 ----------------------------------------------------------------------
-Ran 15 tests in 0.432s
+Ran 22 tests in 38.49s
 
 OK
 Destroying test database for alias 'default'...
 ```
 
 ### Coverage Highlights:
+- **`test_auth.py` (7 tests):**
+  - Registration with validation (unique username, unique email).
+  - Login with username or corporate email.
+  - Token generation and verification.
+  - Current user `/api/auth/me/` profile retrieval.
+  - Logout and token invalidation.
 - **`test_models.py`:**
   - Validates employee creation and string representations.
   - Verifies salary calculations: base + bonus + allowances - tax (20%) - retirement (5%) = net annual salary.
@@ -245,7 +260,7 @@ Destroying test database for alias 'default'...
 
 ---
 
-## 7. Performance Strategy for 10,000 Employees
+## 8. Performance Strategy for 10,000 Employees
 
 | Metric | Target | Measured Result | Optimization Technique |
 | :--- | :--- | :--- | :--- |
@@ -257,11 +272,19 @@ Destroying test database for alias 'default'...
 
 ---
 
-## 8. REST API Documentation
+## 9. REST API Documentation
 
-### Endpoints Contract
+### Authentication & Authorization Endpoints
+- `POST /api/auth/register/`  
+  Registers a new HR user account with role selection (`HR Manager`, `Compensation Specialist`, `People Ops`) and generates a security auth token.
+- `POST /api/auth/login/`  
+  Authenticates an HR professional with username/email and password, returning user profile and token.
+- `POST /api/auth/logout/`  
+  Invalidates session and security token.
+- `GET /api/auth/me/`  
+  Returns currently authenticated user profile and organizational permissions.
 
-#### Employee Management
+### Employee & Compensation Endpoints
 - `GET /api/employees/`  
   *Query params:* `page`, `page_size`, `department`, `country`, `currency`, `gender`, `employment_status`, `search`, `ordering`
 - `GET /api/employees/{id}/`  
@@ -274,7 +297,7 @@ Destroying test database for alias 'default'...
 - `GET /api/employees/export-csv/`  
   Streams current filtered dataset to a downloadable `.csv` file.
 
-#### Executive Analytics (HR Decision Engine)
+### Executive Analytics Endpoints
 - `GET /api/analytics/summary/`  
   Returns: `headcount`, `total_spend_usd`, `avg_salary_usd`, `median_salary_usd`, `min_salary_usd`, `max_salary_usd`.
 - `GET /api/analytics/departments/`  
@@ -290,7 +313,7 @@ Destroying test database for alias 'default'...
 
 ---
 
-## 9. Production Deployment with Docker Compose
+## 10. Production Deployment with Docker Compose
 
 A multi-stage containerized setup is provided for instant zero-dependency deployment:
 
@@ -304,27 +327,27 @@ docker-compose up --build -d
 - Nginx automatically routes `/api/*` traffic to the Django backend.
 - The backend container automatically runs migrations and seeds 10,000 employees on initial startup.
 
-To stop the containers:
+---
+
+## 11. Git Remote Push Instructions
+
+To push this repository to your remote Git platform (GitHub / GitLab / Bitbucket):
+
 ```bash
-docker-compose down
+# 1. Add your remote repository URL
+git remote add origin https://github.com/<your-username>/<your-repo-name>.git
+
+# 2. Rename branch to main (if needed)
+git branch -M main
+
+# 3. Push all commits and branches
+git push -u origin main
 ```
+*When prompted for credentials, enter your GitHub/GitLab username and Personal Access Token (or password).*
 
 ---
 
-## 10. Deliberate Non-Goals & Engineering Tradeoffs
-
-To deliver an exceptional, focused product within the assessment scope, the following were intentionally omitted with clear rationale:
-
-1. **Direct Banking Automated Clearing House (ACH) Integrations:**  
-   *Reasoning:* Live banking rails require NACHA certification and banking partner agreements. The system instead produces verified payroll exports consumed by existing payroll providers (e.g. Workday, ADP).
-2. **Employee Self-Service (ESS) Portal:**  
-   *Reasoning:* The persona is strictly the **HR Manager** managing organizational compensation. Adding an employee portal shifts focus to identity federation and payslip downloads, distracting from executive compensation analytics.
-3. **Complex Multi-Tenancy:**  
-   *Reasoning:* ACME is a single global enterprise with 10k staff across 8 subsidiaries. Building multi-tenant SaaS tenancy would add architectural overhead without solving ACME's immediate pain point.
-
----
-
-## 11. Project Artifacts
+## 12. Project Artifacts
 Comprehensive engineering artifacts documenting the evolution of this project are located in `/docs/`:
 - [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) — One-page Product Requirements Document (PRD)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Architecture diagrams and database schema

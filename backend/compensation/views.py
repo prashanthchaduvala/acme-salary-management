@@ -2,12 +2,15 @@ import csv
 from decimal import Decimal
 from django.http import HttpResponse
 from django.db.models import Q
+from django.contrib.auth import login, logout
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, action, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.authtoken.models import Token
 
-from .models import Employee, CurrencyRate
+from .models import Employee, CurrencyRate, UserProfile
 from .serializers import (
     EmployeeListSerializer,
     EmployeeDetailSerializer,
@@ -15,6 +18,9 @@ from .serializers import (
     SalaryRevisionCreateSerializer,
     SalaryRevisionHistorySerializer,
     CurrencyRateSerializer,
+    UserRegisterSerializer,
+    UserLoginSerializer,
+    UserDetailSerializer,
 )
 from .services import (
     CompensationAnalyticsService,
@@ -22,6 +28,67 @@ from .services import (
     CurrencyService,
 )
 
+
+# ==========================================
+# Authentication Endpoints
+# ==========================================
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    """Creates a new HR user account and returns an auth token."""
+    serializer = UserRegisterSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        token, _ = Token.objects.get_or_create(user=user)
+        user_data = UserDetailSerializer(user).data
+        return Response({
+            'message': 'Account created successfully.',
+            'token': token.key,
+            'user': user_data,
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_user(request):
+    """Authenticates an HR user and returns an auth token."""
+    serializer = UserLoginSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.validated_data['user']
+        token, _ = Token.objects.get_or_create(user=user)
+        login(request, user)
+        user_data = UserDetailSerializer(user).data
+        return Response({
+            'message': 'Login successful.',
+            'token': token.key,
+            'user': user_data,
+        }, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def logout_user(request):
+    """Logs out user and invalidates auth token."""
+    if request.user.is_authenticated:
+        Token.objects.filter(user=request.user).delete()
+        logout(request)
+    return Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def current_user(request):
+    """Returns currently authenticated user profile."""
+    if not request.user.is_authenticated:
+        return Response({'isAuthenticated': False, 'user': None}, status=status.HTTP_200_OK)
+    user_data = UserDetailSerializer(request.user).data
+    return Response({'isAuthenticated': True, 'user': user_data}, status=status.HTTP_200_OK)
+
+
+# ==========================================
+# Employee & Salary Registry Endpoints
+# ==========================================
 
 class EmployeePagination(PageNumberPagination):
     page_size = 25
@@ -120,12 +187,16 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        approver = 'Alex (HR Manager)'
+        if request.user.is_authenticated:
+            approver = f"{request.user.first_name or request.user.username} ({getattr(getattr(request.user, 'profile', None), 'role', 'HR')})"
+
         data = serializer.validated_data
         revision = SalaryRevisionService.apply_revision(
             employee=employee,
             new_base_salary=data['new_base_salary'],
             reason=data['reason'],
-            approved_by=data.get('approved_by', 'Alex (HR Manager)'),
+            approved_by=data.get('approved_by') or approver,
             effective_date=data.get('effective_date'),
             bonus_percentage=data.get('bonus_percentage')
         )
@@ -166,6 +237,10 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
         return response
 
+
+# ==========================================
+# Analytics Endpoints
+# ==========================================
 
 @api_view(['GET'])
 def analytics_summary(request):

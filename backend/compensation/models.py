@@ -1,6 +1,17 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils import timezone
 from decimal import Decimal
+
+
+class UserProfile(models.Model):
+    """Extended profile for HR personnel with role-based responsibilities."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=50, default='HR Manager')
+    department = models.CharField(max_length=50, default='People Operations')
+
+    def __str__(self):
+        return f"{self.user.username} ({self.role})"
 
 
 class CurrencyRate(models.Model):
