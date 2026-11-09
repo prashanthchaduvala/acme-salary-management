@@ -161,10 +161,10 @@ class Command(BaseCommand):
         # Step 1: Ensure Currency rates and default HR users are present
         CurrencyService.initialize_default_rates()
         default_users = [
-            {'u': 'alex.hr', 'e': 'alex.hr@acme.org', 'p': 'Password123!', 'f': 'Alex', 'l': 'Rivera', 'r': 'Head of HR & Total Rewards', 'd': 'People Operations'},
-            {'u': 'pchaduvala', 'e': 'pchaduvala@gmail.com', 'p': 'Password123!', 'f': 'Praveen', 'l': 'Chaduvala', 'r': 'HR Operations Lead', 'd': 'Global People & Compensation'},
-            {'u': 'jessica.emp', 'e': 'jessica.lewis.4313@acme.org', 'p': 'Password123!', 'f': 'Jessica', 'l': 'Lewis', 'r': 'Senior Software Engineer (Employee)', 'd': 'Engineering'},
-            {'u': 'sarah.emp', 'e': 'sarah.jenkins@acme.org', 'p': 'Password123!', 'f': 'Sarah', 'l': 'Jenkins', 'r': 'Employee (Read-Only)', 'd': 'Engineering'}
+            {'u': 'alex.hr', 'e': 'alex.hr@acme.org', 'p': 'Welcome@123', 'f': 'Alex', 'l': 'Rivera', 'r': 'Head of HR & Total Rewards', 'd': 'People Operations'},
+            {'u': 'prashanth', 'e': 'prashanthpatelc@gmail.com', 'p': 'Welcome@123', 'f': 'Prashanth', 'l': 'Chaduvala', 'r': 'Head of HR & People Operations', 'd': 'Global People & Compensation'},
+            {'u': 'jessica.emp', 'e': 'jessica.lewis.4313@acme.org', 'p': 'Welcome@123', 'f': 'Jessica', 'l': 'Lewis', 'r': 'Senior Software Engineer (Employee)', 'd': 'Engineering'},
+            {'u': 'sarah.emp', 'e': 'sarah.jenkins@acme.org', 'p': 'Welcome@123', 'f': 'Sarah', 'l': 'Jenkins', 'r': 'Employee (Read-Only)', 'd': 'Engineering'}
         ]
         for du in default_users:
             usr, created = User.objects.get_or_create(

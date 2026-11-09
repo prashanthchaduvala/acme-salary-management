@@ -166,16 +166,17 @@ npm run dev
 
 ---
 
-## 5. Pre-Configured HR User Accounts & Security
+## 5. Pre-Configured User Accounts & Role-Based Portals
 
-The system includes token-based authentication and role-based profiles. The following accounts are pre-seeded and ready to use:
+The system includes token-based authentication and role-based access control (RBAC). The following evaluation accounts are pre-seeded with password **`Welcome@123`**:
 
-| Username / Email | Password | Full Name | Role |
+| Username / Email | Password | Full Name | Role & Experience |
 | :--- | :--- | :--- | :--- |
-| **`pchaduvala`** (`pchaduvala@gmail.com`) | `Password123!` | Praveen Chaduvala | HR Operations Lead |
-| **`alex.hr`** (`alex.hr@acme.org`) | `Password123!` | Alex Rivera | Head of HR & Total Rewards |
+| **`prashanth`** (`prashanthpatelc@gmail.com`) | `Welcome@123` | Prashanth Chaduvala | **HR Administrator (Write)** — Executive Compensation Command Center |
+| **`alex.hr`** (`alex.hr@acme.org`) | `Welcome@123` | Alex Rivera | **Head of Total Rewards (Write)** — Global Payroll & Pay Parity Analytics |
+| **`jessica.emp`** (`jessica.lewis.4313@acme.org`) | `Welcome@123` | Jessica Lewis | **Employee (Read-Only)** — Self-Service Rewards, Paycheck Simulation, Teammates |
 
-*The UI includes "Quick Assessment Login" buttons on the Sign In modal to log in with one click without typing.*
+*The portal includes **1-Click Instant Evaluation Login** buttons on the Sign In page to immediately switch between HR Manager and Employee experiences.*
 
 ---
 

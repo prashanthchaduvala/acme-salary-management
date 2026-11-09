@@ -9,6 +9,8 @@ export interface User {
   is_hr?: boolean;
   employee_record?: {
     employee_id: string;
+    full_name?: string;
+    email?: string;
     job_title: string;
     department: string;
     country: string;
@@ -17,6 +19,20 @@ export interface User {
     base_salary: number;
     bonus_percentage: number;
     net_annual_salary: number;
+    housing_allowance?: number;
+    transport_allowance?: number;
+    tax_deduction_rate?: number;
+    retirement_contribution?: number;
+    hire_date?: string;
+    revisions?: Array<{
+      id: number;
+      previous_base: number;
+      new_base: number;
+      percentage_change: number;
+      effective_date: string;
+      reason: string;
+      approved_by: string;
+    }>;
   } | null;
 }
 

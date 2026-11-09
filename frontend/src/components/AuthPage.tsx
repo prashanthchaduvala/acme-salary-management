@@ -257,7 +257,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     required
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder="e.g. pchaduvala or alex.hr"
+                    placeholder="e.g. prashanth or alex.hr or jessica.emp"
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                   />
                 </div>
@@ -288,14 +288,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <button
                     type="button"
                     disabled={loading}
-                    onClick={() => handleQuickLogin('pchaduvala', 'Password123!')}
+                    onClick={() => handleQuickLogin('prashanth', 'Welcome@123')}
                     className="text-left p-2.5 rounded-xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-xs transition disabled:opacity-50 group cursor-pointer"
                   >
                     <span className="text-xs font-bold text-slate-900 block group-hover:text-indigo-600">
-                      Praveen Chaduvala
+                      Prashanth Chaduvala
                     </span>
                     <span className="text-[10px] text-indigo-600 font-semibold block">HR Admin (Write)</span>
-                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">pchaduvala@gmail.com</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">prashanthpatelc@gmail.com</span>
                     <span className="text-[10px] font-bold text-indigo-600 mt-1 inline-block">
                       Sign in as HR →
                     </span>
@@ -304,7 +304,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <button
                     type="button"
                     disabled={loading}
-                    onClick={() => handleQuickLogin('alex.hr', 'Password123!')}
+                    onClick={() => handleQuickLogin('alex.hr', 'Welcome@123')}
                     className="text-left p-2.5 rounded-xl bg-white border border-indigo-200 hover:border-indigo-500 hover:shadow-xs transition disabled:opacity-50 group cursor-pointer"
                   >
                     <span className="text-xs font-bold text-slate-900 block group-hover:text-indigo-600">
@@ -320,14 +320,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   <button
                     type="button"
                     disabled={loading}
-                    onClick={() => handleQuickLogin('jessica.emp', 'Password123!')}
+                    onClick={() => handleQuickLogin('jessica.emp', 'Welcome@123')}
                     className="text-left p-2.5 rounded-xl bg-white border border-emerald-200 hover:border-emerald-500 hover:shadow-xs transition disabled:opacity-50 group cursor-pointer"
                   >
                     <span className="text-xs font-bold text-slate-900 block group-hover:text-emerald-600">
                       Jessica Lewis
                     </span>
                     <span className="text-[10px] text-emerald-600 font-semibold block">Staff (Read-Only)</span>
-                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">jessica.emp (ACM-04313)</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 truncate">jessica.emp (Employee)</span>
                     <span className="text-[10px] font-bold text-emerald-600 mt-1 inline-block">
                       Sign in as Staff →
                     </span>
@@ -392,7 +392,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   required
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value)}
-                  placeholder="e.g. pchaduvala"
+                  placeholder="e.g. prashanth"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
@@ -406,7 +406,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                     required
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
-                    placeholder="pchaduvala@gmail.com"
+                    placeholder="prashanthpatelc@gmail.com"
                     className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
